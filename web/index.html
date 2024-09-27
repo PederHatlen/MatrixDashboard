@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        html,body{height:100%;margin:0;}
+        body{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background: black;
+        }
+        canvas{
+            width:100vmin;
+            image-rendering:pixelated;
+            /* filter: drop-shadow(0 0 1rem #222); */
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <canvas id="c" width="64" height="32"></canvas>
+    <script>
+        var cEL = document.getElementById("c");
+        var ctx = cEL.getContext("2d");
+
+        ctx.globalCompositeOperation = "screen";
+
+        function render(img){
+            ctx.clearRect(0,0,64,32);
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0,0,64,64);
+            for(let x in img){
+                for(let y in img[x]){
+                    ctx.fillStyle = img[x][y];
+                    ctx.fillRect(y,x,1,1);
+                }
+            }
+        }
+
+        function makeImg(W,H){return Array(W).fill().map(()=>{return Array(H).fill().map(()=>{return"#"+(~~(Math.random()*0xffffff)).toString(16).padStart(6, "0")})})}
+        function fun(){render(makeImg(64,32));window.requestAnimationFrame(fun);}
+        var s=io();
+        s.on("refresh",img=>{render(img)});
+    </script>
+</body>
+</html>
