@@ -1,8 +1,6 @@
 import requests, time, json
 from PIL import Image, ImageFont, ImageDraw
-import numpy as np
 from functions import *
-from threading import Thread
 
 small10 = ImageFont.truetype(f"{PATH}/fonts/small10.ttf", 10)
 small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
@@ -27,7 +25,6 @@ def getNewData():
     response = askSpotify("https://api.spotify.com/v1/me/player")
     olddata["time"] = time.time()
     if response.status_code != 200:
-        askSpotify("https://api.spotify.com/v1/me/player/play")
         olddata["playing"] = False
         return
     currentlyPlaying = response.json()
@@ -54,7 +51,10 @@ def get(frame):
     global olddata
     global covers
     
-    if olddata["time"] < time.time()-10: getNewData()
+    if olddata["time"] < time.time()-10 or (olddata["playing"] and (olddata["data"]["progress_ms"]+(time.time()-olddata["time"])*1000)-100 >= olddata["data"]["item"]["duration_ms"]):
+        getNewData()
+
+    if olddata["data"] == {}: return PIL2frame(Image.new(mode="RGB", size=(64, 32)))
 
     currentlyPlaying = olddata["data"]
 
@@ -90,4 +90,4 @@ def get(frame):
     im.paste(covers[coverURL], (0,0))
     im.paste(infoArea, (33,1))
 
-    return [[rgb2hex(y) for y in x] for x in np.array(im).tolist()]
+    return PIL2frame(im)

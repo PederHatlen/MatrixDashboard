@@ -25,6 +25,8 @@
         var cEL = document.getElementById("c");
         var ctx = cEL.getContext("2d");
 
+        document.body.onclick = document.body.requestFullscreen;
+
         ctx.globalCompositeOperation = "screen";
 
         function render(img){
