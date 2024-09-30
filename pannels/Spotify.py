@@ -6,8 +6,12 @@ small10 = ImageFont.truetype(f"{PATH}/fonts/small10.ttf", 10)
 small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
 icons06 = ImageFont.truetype(f"{PATH}/fonts/icons.ttf", 7)
 
+spotifyColor = "#1ed760"
+scrollSpeed = 5 # (pixel/second)
+
 covers = {}
 olddata = {"playing":False, "time":0, "data":{}}
+oldTS = 0
 
 with open(f"{PATH}/spotifysecrets.json", "r") as fi:
     spotySecrets = json.load(fi)
@@ -23,6 +27,7 @@ def askSpotify(endpoint): return requests.get(endpoint, headers={'Authorization'
 
 def getNewData():
     response = askSpotify("https://api.spotify.com/v1/me/player")
+    print(olddata["time"], time.time())
     olddata["time"] = time.time()
     if response.status_code != 200:
         olddata["playing"] = False
@@ -47,7 +52,7 @@ def pause():
 
 def toggle(): (pause() if olddata["playing"] else play())
 
-def get(frame):
+def get(ts):
     global olddata
     global covers
     
@@ -73,19 +78,19 @@ def get(frame):
 
     titlelength = small05.getlength(f'{currentlyPlaying["item"]["name"]}    ')
 
-    if titlelength > 32: info.text((-int(frame%(max(titlelength, 32))),0), "    ".join([currentlyPlaying["item"]["name"]]*3), font=small05, fill=(255,255,255))
+    if titlelength > 32: info.text((-int((ts*scrollSpeed)%(max(titlelength, 32))),0), "    ".join([currentlyPlaying["item"]["name"]]*3), font=small05, fill=(255,255,255))
     else: info.text((0,0), currentlyPlaying["item"]["name"], font=small05, fill="#fff")
 
     artists = "    ".join([e["name"] for e in currentlyPlaying["item"]["artists"]])
     artistlength = small05.getlength(f"{artists}    ")
-    if artistlength > 32: info.text((-int(frame%(max(artistlength, 32))),8), f"{artists}    {artists}", font=small05, fill="#888")
+    if artistlength > 32: info.text((-int((ts*scrollSpeed)%(max(artistlength, 32))),8), f"{artists}    {artists}", font=small05, fill="#888")
     else: info.text((0,8), artists, font=small05, fill="#888")
 
     progress = ((currentlyPlaying["progress_ms"]+((time.time()-olddata["time"]) if olddata["playing"] else 0)*1000)/currentlyPlaying["item"]["duration_ms"])
     info.line([(0,29),(29,29)], fill="#fff", width=1)
-    info.line([(0,29),(round(progress*30),29)], fill="#1ed760", width=1)
+    info.line([(0,29),(round(progress*30),29)], fill=spotifyColor, width=1)
 
-    info.text((12, 20), text=("1" if olddata["playing"] else "0"), font=icons06, fill="#1ed760")
+    info.text((12, 20), text=("1" if olddata["playing"] else "0"), font=icons06, fill=spotifyColor)
 
     im.paste(covers[coverURL], (0,0))
     im.paste(infoArea, (33,1))

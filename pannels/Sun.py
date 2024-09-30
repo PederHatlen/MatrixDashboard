@@ -5,6 +5,10 @@ from functions import *
 
 small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
 
+ts_start = datetime.datetime.now().timestamp()
+ts_last = 0
+oldim = Image.new("RGB", size=(64,32))
+
 lat, long = 63.42236123297012, 10.431957133973581
 
 def getSunAltitude(t:datetime.datetime, lat = lat, long = long):  # Tyholttårnet, Trondheim Norway
@@ -27,10 +31,15 @@ def getSunAltitude(t:datetime.datetime, lat = lat, long = long):  # Tyholttårne
 
     return degrees(asin(sin(DEC) * sin(radians(lat)) + cos(DEC) * cos(radians(lat)) * cos(LHA)))    # Returns altitude
 
-def get(frame):
+def get(ts):
+    global oldim, ts_last
+    
+    if (ts - ts_last) < 10:return PIL2frame(oldim)
+    ts_last = ts
+    
     im = Image.new(mode="RGB", size=(64, 32))
     d = ImageDraw.Draw(im)
-    now = datetime.datetime.now() + datetime.timedelta(days=frame) # Scrub through the year
+    now = datetime.datetime.now()# + datetime.timedelta(days=int(ts*10 - ts_start*10)) # Scrub through the year
     modified = now.replace(hour=0, minute=0,second=0,microsecond=0, tzinfo=datetime.timezone.utc)
 
     xyValues = [(t, 16-int(0.25*getSunAltitude(modified + datetime.timedelta(hours=t/2)))) for t in range(0, 64)]
@@ -40,5 +49,7 @@ def get(frame):
     d.point(xyValues, "#fff")                                               # Graph of sun possitions
     d.point(xyValues[round((now.hour + now.minute/60)*2)], "#FFDF22")       # The sun curently
     d.text((0,0), str(now.strftime("%b %d")), "#FFDF22", small05)           # Date
+
+    oldim = im
 
     return PIL2frame(im)
