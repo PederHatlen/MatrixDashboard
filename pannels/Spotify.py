@@ -1,4 +1,4 @@
-import requests, time, json, base64, functions
+import requests, time, json, base64, functions, datetime
 from PIL import Image, ImageFont, ImageDraw
 
 
@@ -18,6 +18,8 @@ icons06 = ImageFont.truetype(f"{functions.PATH}/fonts/icons.ttf", 7)
 
 spotifyColor = "#1ed760"
 scrollSpeed = 0.5 # (pixel/100ms)
+
+prev_dial_turn = 0
 
 covers = {}
 olddata = {"playing":False, "time":0, "data":{}}
@@ -48,7 +50,11 @@ def getDaToken():
 def getNewData():
     global olddata
     olddata["time"] = time.time()
-    response = requests.get("https://api.spotify.com/v1/me/player", headers={'Authorization':f'Bearer {getDaToken()}'})
+    try: response = requests.get("https://api.spotify.com/v1/me/player", headers={'Authorization':f'Bearer {getDaToken()}'})
+    except requests.exceptions.ConnectionError:
+        print("Couldnt connect to internet")
+        olddata["playing"] = False
+        return
     if response.status_code != 200:
         olddata["playing"] = False
         return
@@ -57,6 +63,14 @@ def getNewData():
     olddata["playing"] = currentlyPlaying["is_playing"]
     olddata["data"] = currentlyPlaying
 
+def next():
+    response = requests.post("https://api.spotify.com/v1/me/player/next", headers={'Authorization':f'Bearer {getDaToken()}'})
+    if response.status_code == 200: getNewData()
+    else: print(f"Error: {response.status_code}")
+def previous():
+    response = requests.post("https://api.spotify.com/v1/me/player/previous", headers={'Authorization':f'Bearer {getDaToken()}'})
+    if response.status_code == 200: getNewData()
+    else: print(f"Error: {response.status_code}")
 def play():
     response = requests.put("https://api.spotify.com/v1/me/player/play", headers={'Authorization':f'Bearer {getDaToken()}'})
     if response.status_code == 200: olddata["playing"] = True
@@ -67,6 +81,18 @@ def pause():
     else: print(f"Error: {response.status_code}")
 
 def toggle(): (pause() if olddata["playing"] else play())
+
+
+def dial(e):
+    global prev_dial_turn
+    if prev_dial_turn > datetime.datetime.now().timestamp() - 1: return
+    prev_dial_turn = datetime.datetime.now().timestamp()
+    
+    if e == "1H": next()
+    elif e == "1L": previous()
+
+def btn(clicked, both):
+    if clicked == 1: toggle()
 
 def get(fn):
     global olddata, covers
