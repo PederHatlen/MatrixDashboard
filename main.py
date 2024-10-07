@@ -81,7 +81,7 @@ def dial(name):
 
 def btn(clicked):
     try:
-        pannels.packages[menuSelected].btn(dial1BTN, dial2BTN, clicked)
+        pannels.packages[menuSelected].btn(clicked, dial1BTN.is_active and dial2BTN.is_active)
         return render(pannels.packages[menuSelected].get(framenum))
     except AttributeError: print(f"pannel {menuSelected} doesnt support buttons")
 
@@ -89,13 +89,13 @@ menuBTN.when_activated = toggleMenu
 menuDial.when_rotated_clockwise = menuCW
 menuDial.when_rotated_counter_clockwise = menuCC
 
-dial1BTN.when_activated = (lambda a: dial(dial1BTN))
-dial1Dial.when_rotated_clockwise = (lambda a: dial("CW1"))
-dial1Dial.when_rotated_counter_clockwise = (lambda a: dial("CC1"))
+dial1BTN.when_activated = (lambda a: btn(1))
+dial1Dial.when_rotated_clockwise = (lambda a: dial("1H"))
+dial1Dial.when_rotated_counter_clockwise = (lambda a: dial("1L"))
 
-dial2BTN.when_activated = (lambda a: btn(dial2BTN))
-dial2Dial.when_rotated_clockwise = (lambda a: dial("CW2"))
-dial2Dial.when_rotated_counter_clockwise = (lambda a: dial("CC2"))
+dial2BTN.when_activated = (lambda a: btn(2))
+dial2Dial.when_rotated_clockwise = (lambda a: dial("2H"))
+dial2Dial.when_rotated_counter_clockwise = (lambda a: dial("2L"))
 
 while True:
     t = datetime.datetime.now().timestamp()
