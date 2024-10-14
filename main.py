@@ -1,40 +1,31 @@
 import time, virtual_display, functions, pannels, gpiozero, datetime
 from PIL import Image, ImageFont, ImageDraw
 
-global menuActive, menuSelected
+# Initialize the webserver/running screen emulator
+socketio = virtual_display.run(1337, allow_cors=True)
 
 small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
 small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
 
-t = 0
 framenum = 0
-
 oldoutTS = 0
 
-menuSelected = 4
-menuActive = False
-
 pNames = pannels.__all__
-
+menuSelected = pNames.index("Weather") # Default pannel can be sett here
+menuActive = False
 menuColor = "#ff8800"
-# colors = {
-#     "Clock":"#ff8800",
-#     "ColorNoice":"#f060df",
-#     "NormalMap":"#ff0000",
-#     "Spotify":"#1ed760",
-#     "Sun":"#FFDF22"
-# }
 
-socketio = virtual_display.run("1337", allow_cors=True)
+def toggleMenu():
+    global menuActive
+    menuActive = not menuActive
+    if menuActive: render(menu())
 
-menuBTN = gpiozero.Button(26,bounce_time=0.1)
-menuDial = gpiozero.RotaryEncoder(20,21, wrap=True, max_steps=0)
-
-dial1BTN = gpiozero.Button(16,bounce_time=0.1)
-dial1Dial = gpiozero.RotaryEncoder(19,13, wrap=True, max_steps=0)
-
-dial2BTN = gpiozero.Button(12,bounce_time=0.1)
-dial2Dial = gpiozero.RotaryEncoder(5,6, wrap=True, max_steps=0)
+def menuTurn(dir): 
+    global menuActive, menuSelected
+    if not menuActive: return menuDial.dial(dir)
+    elif dir == "1H": menuSelected = (menuSelected+1) % len(pannels.packages)
+    elif dir == "1L": menuSelected = ((menuSelected-1) if menuSelected > 0 else len(pannels.packages)-1)
+    render(menu())
 
 def render(frame):
     global oldoutTS
@@ -50,55 +41,39 @@ def menu(pannels = pannels):
     d = ImageDraw.Draw(im)
 
     for i in range(len(pannels.packages)):
-        if i == menuSelected: d.rectangle(((((i*4)%64), ((i//64)*4)), (((i*4)%64)+2, ((i//64)*4)+2)), "#fff")
-        d.point((((i*4)%64)+1, ((i//64)*4)+1), menuColor)
+        x, y = ((i*4)%64), ((i//64)*4)
+        if i == menuSelected: d.rectangle(((x, y), (x+2, y+2)), "#fff")
+        d.point((x+1, y+1), menuColor)
 
     d.text((0, 16), pNames[menuSelected], "#fff",small05)
     return functions.PIL2frame(im)
 
-def toggleMenu():
-    global menuActive
-    menuActive = not menuActive
-    if menuActive: render(menu())
-def menuCW(): 
-    global menuActive, menuSelected
-    if not menuActive: return
-    menuSelected = (menuSelected+1) % len(pannels.packages)
-    render(menu())
+class dial:
+    def __init__(self, dialNumber, BTNpin, D1, D2, menu = False):
+        self.BTN = gpiozero.Button(BTNpin,bounce_time=0.1)
+        self.DIAL = gpiozero.RotaryEncoder(D1,D2, wrap=True, max_steps=0)
+        self.dialNumber = dialNumber
 
-def menuCC(): 
-    global menuActive, menuSelected
-    if not menuActive: return
-    menuSelected = ((menuSelected-1) if menuSelected > 0 else len(pannels.packages)-1)
-    render(menu())
-
-
-def dial(name):
-    try:
-        pannels.packages[menuSelected].dial(name)
+        self.BTN.when_activated = (toggleMenu if menu else self.btn)
+        self.DIAL.when_rotated_clockwise = (lambda: menuTurn(f"{self.dialNumber}H") if menu else self.dial(f"{self.dialNumber}H"))
+        self.DIAL.when_rotated_counter_clockwise = (lambda: menuTurn(f"{self.dialNumber}L") if menu else self.dial(f"{self.dialNumber}L"))
+    
+    def dial(self, dir):
+        try: pannels.packages[menuSelected].dial(dir)
+        except AttributeError: return print(f"{menuSelected} doesn't support dial")
         return render(pannels.packages[menuSelected].get(framenum))
-    except AttributeError: print(f"pannel {menuSelected} doesnt support dial")
-
-def btn(clicked):
-    try:
-        pannels.packages[menuSelected].btn(clicked, dial1BTN.is_active and dial2BTN.is_active)
+    
+    def btn(self):
+        try: pannels.packages[menuSelected].btn()
+        except AttributeError: return print(f"{menuSelected} doesn't support buttons")
         return render(pannels.packages[menuSelected].get(framenum))
-    except AttributeError: print(f"pannel {menuSelected} doesnt support buttons")
+        
 
-menuBTN.when_activated = toggleMenu
-menuDial.when_rotated_clockwise = menuCW
-menuDial.when_rotated_counter_clockwise = menuCC
-
-dial1BTN.when_activated = (lambda a: btn(1))
-dial1Dial.when_rotated_clockwise = (lambda a: dial("1H"))
-dial1Dial.when_rotated_counter_clockwise = (lambda a: dial("1L"))
-
-dial2BTN.when_activated = (lambda a: btn(2))
-dial2Dial.when_rotated_clockwise = (lambda a: dial("2H"))
-dial2Dial.when_rotated_counter_clockwise = (lambda a: dial("2L"))
+# Dials and buttons
+menuDial = dial(1, 26, 20, 21, True)
+dial1 = dial(2, 16, 19, 13)
 
 while True:
-    t = datetime.datetime.now().timestamp()
     if not menuActive: render(pannels.packages[menuSelected].get(framenum))
     framenum += 1
     time.sleep(0.1)

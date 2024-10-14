@@ -47,7 +47,7 @@ def getDaToken():
         spotySecrets["runout"] = (int(time.time()) + response["expires_in"] - 10)
     return spotySecrets["access_token"]
 
-def getNewData():
+def get_data():
     global olddata
     olddata["time"] = time.time()
     try: response = requests.get("https://api.spotify.com/v1/me/player", headers={'Authorization':f'Bearer {getDaToken()}'})
@@ -56,6 +56,7 @@ def getNewData():
         olddata["playing"] = False
         return
     if response.status_code != 200:
+        print("Not playing annything")
         olddata["playing"] = False
         return
     currentlyPlaying = response.json()
@@ -65,11 +66,11 @@ def getNewData():
 
 def next():
     response = requests.post("https://api.spotify.com/v1/me/player/next", headers={'Authorization':f'Bearer {getDaToken()}'})
-    if response.status_code == 200: getNewData()
+    if response.status_code == 200: get_data()
     else: print(f"Error: {response.status_code}")
 def previous():
     response = requests.post("https://api.spotify.com/v1/me/player/previous", headers={'Authorization':f'Bearer {getDaToken()}'})
-    if response.status_code == 200: getNewData()
+    if response.status_code == 200: get_data()
     else: print(f"Error: {response.status_code}")
 def play():
     response = requests.put("https://api.spotify.com/v1/me/player/play", headers={'Authorization':f'Bearer {getDaToken()}'})
@@ -80,32 +81,31 @@ def pause():
     if response.status_code == 200: olddata["playing"] = False
     else: print(f"Error: {response.status_code}")
 
-def toggle(): (pause() if olddata["playing"] else play())
-
+def btn(): (pause() if olddata["playing"] else play())
 
 def dial(e):
     global prev_dial_turn
     if prev_dial_turn > datetime.datetime.now().timestamp() - 1: return
     prev_dial_turn = datetime.datetime.now().timestamp()
     
-    if e == "1H": next()
-    elif e == "1L": previous()
-
-def btn(clicked, both):
-    if clicked == 1: toggle()
+    if e == "2H": next()
+    elif e == "2L": previous()
 
 def get(fn):
     global olddata, covers
     
     # Get new data from spotify every 10 seconds
-    if olddata["time"] < time.time()-10:getNewData()
+    if olddata["time"] < time.time()-10: get_data()
 
     # If the song just ended, get new data
     elif (olddata["playing"] and (olddata["data"]["progress_ms"]+(time.time()-olddata["time"])*1000)-100 >= olddata["data"]["item"]["duration_ms"]):
-        getNewData()
+        get_data()
+
+    im = Image.new(mode="RGB", size=(64, 32))
 
     # If you are not playing annything on spotify return black screen
-    if olddata["data"] == {}: return functions.PIL2frame(Image.new(mode="RGB", size=(64, 32)))
+    if olddata["data"] == {}:
+        return functions.PIL2frame(im)
 
     # Set localdata to stored data
     currentlyPlaying = olddata["data"]
@@ -116,9 +116,7 @@ def get(fn):
         covers[coverURL] = Image.open(requests.get(currentlyPlaying["item"]["album"]["images"][-1]["url"], stream=True).raw).resize((32,32))
         if len(covers) > 20: covers = covers[-20:]
 
-    im = Image.new(mode="RGB", size=(64, 32))
     infoArea = Image.new(mode="RGB", size=(30,30))
-
     info = ImageDraw.Draw(infoArea)
     info.fontmode = "1"
 

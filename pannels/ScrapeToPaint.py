@@ -1,9 +1,9 @@
 import functions
 from PIL import Image, ImageDraw
 
-x, y = 0, 0
+x, y = 32, 16
 
-drawing = [(0,0),]
+drawing = [(x,y),]
 
 def get(fn = 0):
     im = Image.new(mode="RGB", size=(64, 32))
@@ -21,9 +21,7 @@ def dial(e):
     elif e == "2L": y -= (1 if y > 0 else 0)
     if (x, y) not in drawing: drawing.append((x,y))
 
-def btn(clicked, both): 
-    print("BTN click")
+def btn(): 
     global drawing
-    if both: 
-        print("Clearing")
-        drawing = []
+    print("Clearing")
+    drawing = [(x, y)]
