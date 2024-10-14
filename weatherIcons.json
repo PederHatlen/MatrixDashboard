@@ -1,0 +1,252 @@
+{
+    "clearsky_day":{
+        "code":"01d",
+        "description":"Sol"
+    },"clearsky_night":{
+        "code":"01n",
+        "description":"Skyfritt"
+    },"clearsky_polartwilight":{
+        "code":"01m",
+        "description":"Skyfritt"
+    },"fair_day":{
+        "code":"02d",
+        "description":"Lettskyet"
+    },"fair_night":{
+        "code":"02n",
+        "description":"Lettskyet"
+    },"fair_polartwilight":{
+        "code":"02m",
+        "description":"Lettskyet"
+    },"partlycloudy_day":{
+        "code":"03d",
+        "description":"Delvis skyet"
+    },"partlycloudy_night":{
+        "code":"03n",
+        "description":"Delvis skyet"
+    },"partlycloudy_polartwilight":{
+        "code":"03m",
+        "description":"Delvis skyet"
+    },"cloudy":{
+        "code":"04",
+        "description":"Skyet"
+    },"rainshowers_day":{
+        "code":"05d",
+        "description":"Regnbyger"
+    },"rainshowers_night":{
+        "code":"05n",
+        "description":"Regnbyger"
+    },"rainshowers_polartwilight":{
+        "code":"05m",
+        "description":"Regnbyger"
+    },"rainshowersandthunder_day":{
+        "code":"06d",
+        "description":"Tordenbyger"
+    },"rainshowersandthunder_night":{
+        "code":"06n",
+        "description":"Tordenbyger"
+    },"rainshowersandthunder_polartwilight":{
+        "code":"06m",
+        "description":"Tordenbyger"
+    },"sleetshowers_day":{
+        "code":"07d",
+        "description":"Sluddbyger"
+    },"sleetshowers_night":{
+        "code":"07n",
+        "description":"Sluddbyger"
+    },"sleetshowers_polartwilight":{
+        "code":"07m",
+        "description":"Sluddbyger"
+    },"snowshowers_day":{
+        "code":"08d",
+        "description":"Snøbyger"
+    },"snowshowers_night":{
+        "code":"08n",
+        "description":"Snøbyger"
+    },"snowshowers_polartwilight":{
+        "code":"08m",
+        "description":"Snøbyger"
+    },"rain":{
+        "code":"09",
+        "description":"Regn"
+    },"heavyrain":{
+        "code":"10",
+        "description":"Kraftig regn"
+    },"heavyrainandthunder":{
+        "code":"11",
+        "description":"Kraftig torden-regn"
+    },"sleet":{
+        "code":"12",
+        "description":"Sludd"
+    },"snow":{
+        "code":"13",
+        "description":"Snø"
+    },"snowandthunder":{
+        "code":"14",
+        "description":"Snø og torden"
+    },"fog":{
+        "code":"15",
+        "description":"Tåke"
+    },"sleetshowersandthunder_day":{
+        "code":"20d",
+        "description":"Sluddbyger m. torden"
+    },"sleetshowersandthunder_night":{
+        "code":"20n",
+        "description":"Sluddbyger m. torden"
+    },"sleetshowersandthunder_polartwilight":{
+        "code":"20m",
+        "description":"Sluddbyger m. torden"
+    },"snowshowersandthunder_day":{
+        "code":"21d",
+        "description":"Snøbyger m. torden"
+    },"snowshowersandthunder_night":{
+        "code":"21n",
+        "description":"Snøbyger m. torden"
+    },"snowshowersandthunder_polartwilight":{
+        "code":"21m",
+        "description":"Snøbyger m. torden"
+    },"rainandthunder":{
+        "code":"22",
+        "description":"Regn og torden"
+    },"sleetandthunder":{
+        "code":"23",
+        "description":"Sludd og torden"
+    },"lightrainshowersandthunder_day":{
+        "code":"24d",
+        "description":"Lette tordenbyger"
+    },"lightrainshowersandthunder_night":{
+        "code":"24n",
+        "description":"Lette tordenbyger"
+    },"lightrainshowersandthunder_polartwilight":{
+        "code":"24m",
+        "description":"Lette tordenbyger"
+    },"heavyrainshowersandthunder_day":{
+        "code":"25d",
+        "description":"Kraftige tordenbyger"
+    },"heavyrainshowersandthunder_night":{
+        "code":"25n",
+        "description":"Kraftige tordenbyger"
+    },"heavyrainshowersandthunder_polartwilight":{
+        "code":"25m",
+        "description":"Kraftige tordenbyger"
+    },"lightssleetshowersandthunder_day":{
+        "code":"26d",
+        "description":"Lette tordenbyger"
+    },"lightssleetshowersandthunder_night":{
+        "code":"26n",
+        "description":"Lette tordenbyger"
+    },"lightssleetshowersandthunder_polartwilight":{
+        "code":"26m",
+        "description":"Lette tordenbyger"
+    },"heavysleetshowersandthunder_day":{
+        "code":"27d",
+        "description":"Kraftige tordenbyger"
+    },"heavysleetshowersandthunder_night":{
+        "code":"27n",
+        "description":"Kraftige tordenbyger"
+    },"heavysleetshowersandthunder_polartwilight":{
+        "code":"27m",
+        "description":"Kraftige tordenbyger"
+    },"lightssnowshowersandthunder_day":{
+        "code":"28d",
+        "description":"Lette tordenbyger"
+    },"lightssnowshowersandthunder_night":{
+        "code":"28n",
+        "description":"Lette tordenbyger"
+    },"lightssnowshowersandthunder_polartwilight":{
+        "code":"28m",
+        "description":"Lette tordenbyger"
+    },"heavysnowshowersandthunder_day":{
+        "code":"29d",
+        "description":"Kraftige tordenbyger"
+    },"heavysnowshowersandthunder_night":{
+        "code":"29n",
+        "description":"Kraftige tordenbyger"
+    },"heavysnowshowersandthunder_polartwilight":{
+        "code":"29m",
+        "description":"Kraftige tordenbyger"
+    },"lightrainandthunder":{
+        "code":"30",
+        "description":"Lett torden-regn"
+    },"lightsleetandthunder":{
+        "code":"31",
+        "description":"Lett torden-sludd "
+    },"heavysleetandthunder":{
+        "code":"32",
+        "description":"Kraftig torden-sludd"
+    },"lightsnowandthunder":{
+        "code":"33",
+        "description":"Lett torden-snø"
+    },"heavysnowandthunder":{
+        "code":"34",
+        "description":"Kraftig torden-snø"
+    },"lightrainshowers_day":{
+        "code":"40d",
+        "description":"Lette regnbyger"
+    },"lightrainshowers_night":{
+        "code":"40n",
+        "description":"Lette regnbyger"
+    },"lightrainshowers_polartwilight":{
+        "code":"40m",
+        "description":"Lette regnbyger"
+    },"heavyrainshowers_day":{
+        "code":"41d",
+        "description":"Kraftige regnbyger"
+    },"heavyrainshowers_night":{
+        "code":"41n",
+        "description":"Kraftige regnbyger"
+    },"heavyrainshowers_polartwilight":{
+        "code":"41m",
+        "description":"Kraftige regnbyger"
+    },"lightsleetshowers_day":{
+        "code":"42d",
+        "description":"Lette sluddbyger"
+    },"lightsleetshowers_night":{
+        "code":"42n",
+        "description":"Lette sluddbyger"
+    },"lightsleetshowers_polartwilight":{
+        "code":"42m",
+        "description":"Lette sluddbyger"
+    },"heavysleetshowers_day":{
+        "code":"43d",
+        "description":"Kraftige sluddbyger"
+    },"heavysleetshowers_night":{
+        "code":"43n",
+        "description":"Kraftige sluddbyger"
+    },"heavysleetshowers_polartwilight":{
+        "code":"43m",
+        "description":"Kraftige sluddbyger"
+    },"lightsnowshowers_day":{
+        "code":"44d",
+        "description":"Lette snøbyger"
+    },"lightsnowshowers_night":{
+        "code":"44n",
+        "description":"Lette snøbyger"
+    },"lightsnowshowers_polartwilight":{
+        "code":"44m",
+        "description":"Lette snøbyger"
+    },"heavysnowshowers_day":{
+        "code":"45d",
+        "description":"Kraftige snøbyger"
+    },"heavysnowshowers_night":{
+        "code":"45n",
+        "description":"Kraftige snøbyger"
+    },"heavysnowshowers_polartwilight":{
+        "code":"45m",
+        "description":"Kraftige snøbyger"
+    },"lightrain":{
+        "code":"46",
+        "description":"Lett regn"
+    },"lightsleet":{
+        "code":"47",
+        "description":"Lett sludd"
+    },"heavysleet":{
+        "code":"48",
+        "description":"Kraftig sludd"
+    },"lightsnow":{
+        "code":"49",
+        "description":"Lett snø"
+    },"heavysnow":{
+        "code":"50",
+        "description":"Kraftig snø"
+    }
+}
