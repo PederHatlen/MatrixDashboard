@@ -9,5 +9,6 @@ def run(port, host="0.0.0.0", allow_cors=False):
     def index(path="index.html"): return flask.send_from_directory(f"./web/",path)
     socketio=flask_socketio.SocketIO(app, cors_allowed_origins=("*" if allow_cors else ""))
 
+    print("Starting web server!")
     socketio.start_background_task(socketio.run, app=app, port=port, host=host)
     return socketio
