@@ -1,5 +1,6 @@
-import requests, time, json, base64, functions, datetime
-from PIL import Image, ImageFont, ImageDraw
+import requests, time, json, base64, datetime
+from PIL import Image, ImageDraw
+from functions import *
 
 
 """
@@ -12,11 +13,10 @@ all these needs to be added to the json file "spotifysecrets.json" in the root o
 
 """
 
-small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
-small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
-icons06 = ImageFont.truetype(f"{functions.PATH}/fonts/icons.ttf", 7)
+small05 = font["small05"]
+icons07 = font["icons07"]
 
-spotifyColor = functions.color["mint"]
+spotifyColor = color["mint"]
 scrollSpeed = 0.5 # (pixel/50ms)
 
 prev_dial_turn = 0
@@ -30,7 +30,7 @@ MS = datetime.timedelta(milliseconds=1)
 
 spotySecrets = {}
 
-with open(f"{functions.PATH}/spotifysecrets.json", "r") as fi:
+with open(f"{PATH}/spotifysecrets.json", "r") as fi:
     file = json.load(fi)
     spotySecrets["refresh_token"] = file["refresh_token"]
     spotySecrets["Authorization"] = base64.b64encode("".join([file["client_id"], ":", file["client_secret"]]).encode("ascii")).decode("ascii")
@@ -118,7 +118,7 @@ def get(fn):
 
     # If you are not playing annything on spotify return black screen
     if data["data"] == {}:
-        return functions.PIL2frame(im)
+        return PIL2frame(im)
     
     delta = (datetime.datetime.now() - data["time"])
 
@@ -159,4 +159,4 @@ def get(fn):
     im.paste(covers[coverURL], (0,0))
     im.paste(infoArea, (33,1))
 
-    return functions.PIL2frame(im)
+    return PIL2frame(im)

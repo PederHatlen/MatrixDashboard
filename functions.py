@@ -1,8 +1,14 @@
 import pathlib
 import numpy as np
+from PIL import ImageFont
 PATH = str(pathlib.Path(__file__).parent.resolve())
 
 asciiTable = "`.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"
+
+font = {
+    "small05": ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5),
+    "icons07": ImageFont.truetype(f"{PATH}/fonts/icons.ttf", 7)
+}
 
 color = {
     "red":"#FF0000",

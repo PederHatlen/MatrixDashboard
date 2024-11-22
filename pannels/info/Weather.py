@@ -1,9 +1,9 @@
 import datetime, requests, json, textwrap
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw
 from functions import *
 import numpy as np
 
-small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
+small05 = font["small05"]
 
 lfn = 0
 expires = datetime.datetime.now(tz=datetime.timezone.utc)

@@ -1,8 +1,8 @@
-import datetime, docker, os, psutil
-from PIL import Image, ImageFont, ImageDraw
+import docker, os, psutil
+from PIL import Image, ImageDraw
 from functions import *
 
-small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
+small05 = font["small05"]
 
 isRoot = (os.geteuid() == 0)
 if isRoot: client = docker.from_env()

@@ -1,7 +1,7 @@
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw
 from functions import *
 
-small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
+small05 = font["small05"]
 
 def get(ts):
     im = Image.new(mode="RGB", size=(64, 32))

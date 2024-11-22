@@ -1,8 +1,8 @@
 import datetime, functions
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw
+from functions import *
 
-small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
-small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
+small05 = font["small05"]
 
 current = 0
 total = 1

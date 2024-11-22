@@ -1,8 +1,5 @@
 import datetime, functions
-from PIL import Image, ImageFont, ImageDraw
-
-small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
-small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
+from PIL import Image, ImageDraw
 
 def get(ts):
     now = datetime.datetime.now()

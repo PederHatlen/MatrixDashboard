@@ -1,11 +1,11 @@
 import datetime
 import numpy as np
 import astral.sun, astral.moon # Cheating
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw
 from math import radians, sin, cos, atan2, asin, degrees
 from functions import *
 
-small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
+small05 = font["small05"]
 
 BC = 0
 GC = 64

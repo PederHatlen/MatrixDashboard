@@ -1,9 +1,7 @@
-import datetime
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw
 from functions import *
 
-small10 = ImageFont.truetype(f"{PATH}/fonts/small10.ttf", 10)
-small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
+small05 = font["small05"]
 
 def get(ts):
     im = Image.new(mode="RGB", size=(64, 32))
