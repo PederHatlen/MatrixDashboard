@@ -1,9 +1,9 @@
-import datetime, functions, requests, json, textwrap
+import datetime, requests, json, textwrap
 from PIL import Image, ImageFont, ImageDraw
+from functions import *
 import numpy as np
 
-small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
-small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
+small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
 
 lfn = 0
 expires = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -14,11 +14,11 @@ lat, long = 63.4224, 10.4320 # Trondheim Norway
 with open("./weatherIcons.json", "r") as fi: weatherIcons = json.load(fi)
 icons = {e:Image.open(f"./weatherIcons/{weatherIcons[e]['code']}.png").resize((16,16)) for e in weatherIcons.keys()}
 
-LC, BC = (54,140,193), (0,0,0)
+LC, BC = hex2rgb(color["lightblue"]), (0,0,0)
 # Percipation icon
 rainIcon = Image.fromarray(np.array([[LC,BC,BC,BC,LC],[LC,BC,LC,BC,BC],[BC,BC,LC,BC,LC],[LC,BC,BC,BC,LC],[LC,BC,LC,BC,BC],[BC,BC,LC,BC,BC]], dtype=np.uint8), 'RGB')
 
-def get_data_real():
+def get_data():
     global expires
     headers = {'User-Agent':'https://github.com/PederHatlen/MatrixDashboard email:pederhatlen@gmail.com',}
     response = requests.get(f"https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={round(lat,4)}&lon={round(long,4)}",headers=headers)
@@ -27,7 +27,7 @@ def get_data_real():
     print(expires)
     return response.json()
 
-def get_data():
+def get_data_fake():
     global expires
     with open("./tempWeather.json") as fi:
         data = json.load(fi)
@@ -57,7 +57,7 @@ def get(fn):
     d = ImageDraw.Draw(im)
     d.fontmode = "1"
 
-    if data == {}: return functions.PIL2frame(im)
+    if data == {}: return PIL2frame(im)
 
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     currentHour = get_current_hour(data, now)
@@ -81,9 +81,9 @@ def get(fn):
     d.text((56 - small05.getlength(str(temp)), 1), str(temp), font=small05)
     d.text((56 - small05.getlength(str(percipation)), 8), str(percipation), font=small05)
 
-    d.text((56, 1), "°C", font=small05, fill=("#368cc1" if temp < 0 else "#c13636"))
+    d.text((56, 1), "°C", font=small05, fill=(color["lightblue"] if temp < 0 else color["lightred"]))
     im.paste(rainIcon, (58, 8))
 
     d.multiline_text((1, 20), description, font=small05, spacing=1)
     
-    return functions.PIL2frame(im)
+    return PIL2frame(im)
