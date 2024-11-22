@@ -1,12 +1,11 @@
-import datetime, functions
-
+import datetime
+import numpy as np
+import astral.sun, astral.moon # Cheating
 from PIL import Image, ImageFont, ImageDraw
 from math import radians, sin, cos, atan2, asin, degrees
-import numpy as np
+from functions import *
 
-import astral.sun, astral.moon # Cheating
-
-small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
+small05 = ImageFont.truetype(f"{PATH}/fonts/small05.ttf", 5)
 
 BC = 0
 GC = 64
@@ -55,13 +54,13 @@ def getSunAltitude(t:datetime.datetime, lat = lat, long = long):  # Tyholttårne
 dayoffset = 0
 def dial(e):
     global dayoffset
-    if e == "2H": dayoffset+=1
+    if e == "2R": dayoffset+=1
     elif e == "2L": dayoffset-=1
 
 def get(fn):
     global oldim, fn_last, dayoffset
     
-    if (fn - fn_last) < 10: return functions.PIL2frame(oldim)
+    if (fn - fn_last) < 10: return PIL2frame(oldim)
     fn_last = fn
     
     im = Image.new(mode="RGB", size=(64, 32))
@@ -81,12 +80,12 @@ def get(fn):
 
     d.line(((0,16), (64,16)), "#444")                                                   # Horizonline
     d.line(xyValues, "#fff")                                                            # Graph of sun possitions
-    d.point(xyValues[round((now.hour + now.minute/60)*2)], "#FFDF22")                   # The sun curently
+    d.point(xyValues[round((now.hour + now.minute/60)*2)], color["yellow"])             # The sun curently
 
-    d.text((0,0), str(now.strftime("%b %d")), "#FFDF22", small05)                       # Date
-    d.text((0, 27), str(sunriseDT), "#876833", small05)                                 # Sunrise Time
-    d.text((64-small05.getlength(sunsetDT), 27), str(sunsetDT), "#443387", small05)     # Sunset Time
+    d.text((0,0), str(now.strftime("%b %d")), color["yellow"], small05)                         # Date
+    d.text((0, 27), str(sunriseDT), color["orange"], small05)                                   # Sunrise Time
+    d.text((65-small05.getlength(sunsetDT), 27), str(sunsetDT), color["purple"], small05)       # Sunset Time
 
     oldim = im
 
-    return functions.PIL2frame(im)
+    return PIL2frame(im)
