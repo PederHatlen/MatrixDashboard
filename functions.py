@@ -4,6 +4,22 @@ PATH = str(pathlib.Path(__file__).parent.resolve())
 
 asciiTable = "`.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"
 
+color = {
+    "red":"#FF0000",
+    "lightred":"#FF4040",
+    "orange":"#FF8000",
+    "yellow":"#FFFF00",
+    "green":"#00FF00",
+    "mint":"#00FF80",
+    "teal":"#00FFFF",
+    "lightblue":"#0080FF",
+    "blue":"#0000FF",
+    "purple":"#8000FF",
+    "pink":"#FF00FF",
+    "magenta":"#FF0080",
+    "white":"#FFFFFF"
+}
+
 def clamp8(x): return min(255, max(0, int(x)))
 
 def rgb2hex(rgb): return '#%02x%02x%02x' % (clamp8(rgb[0]), clamp8(rgb[1]), clamp8(rgb[2]))
