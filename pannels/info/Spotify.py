@@ -16,14 +16,17 @@ small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
 small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
 icons06 = ImageFont.truetype(f"{functions.PATH}/fonts/icons.ttf", 7)
 
-spotifyColor = "#1ed760"
-scrollSpeed = 0.5 # (pixel/100ms)
+spotifyColor = functions.color["mint"]
+scrollSpeed = 0.5 # (pixel/50ms)
 
 prev_dial_turn = 0
 
 covers = {}
-olddata = {"playing":False, "time":0, "data":{}}
-oldTS = 0
+data = {"playing":False, "time":datetime.datetime.fromtimestamp(0), "data":{}}
+oldTS = datetime.datetime.fromtimestamp(0)
+needNewDataPLZ = False
+
+MS = datetime.timedelta(milliseconds=1)
 
 spotySecrets = {}
 
@@ -33,8 +36,8 @@ with open(f"{functions.PATH}/spotifysecrets.json", "r") as fi:
     spotySecrets["Authorization"] = base64.b64encode("".join([file["client_id"], ":", file["client_secret"]]).encode("ascii")).decode("ascii")
 
 def getDaToken():
-    if "runout" not in spotySecrets or spotySecrets["runout"] < time.time():
-        data = {
+    if "runout" not in spotySecrets or spotySecrets["runout"] < datetime.datetime.now():
+        body = {
             'grant_type':'refresh_token',
             'refresh_token':spotySecrets["refresh_token"]
         }
@@ -42,79 +45,92 @@ def getDaToken():
             'Authorization':f'Basic {spotySecrets["Authorization"]}',
             'Content-Type':'application/x-www-form-urlencoded'
         }
-        response = requests.request("POST", "https://accounts.spotify.com/api/token", data=data, headers=headers).json()
-        spotySecrets["access_token"] = response["access_token"]
-        spotySecrets["runout"] = (int(time.time()) + response["expires_in"] - 10)
+        response = requests.request("POST", "https://accounts.spotify.com/api/token", data=body, headers=headers)
+        spotySecrets["access_token"] = response.json()["access_token"]
+
+        spotySecrets["runout"] = (datetime.datetime.now() + datetime.timedelta(seconds=response.json()["expires_in"] - 10))
     return spotySecrets["access_token"]
 
 def get_data():
-    global olddata
-    olddata["time"] = time.time()
+    global data, oldTS
+    oldTS = datetime.datetime.now()
     try: response = requests.get("https://api.spotify.com/v1/me/player", headers={'Authorization':f'Bearer {getDaToken()}'})
     except requests.exceptions.ConnectionError:
         print("Couldnt connect to internet")
-        olddata["playing"] = False
+        data["playing"] = False
         return
     if response.status_code != 200:
         print("Not playing annything")
-        olddata["playing"] = False
+        data["playing"] = False
         return
     currentlyPlaying = response.json()
-    print(currentlyPlaying)
-    olddata["playing"] = currentlyPlaying["is_playing"]
-    olddata["data"] = currentlyPlaying
+    # print(currentlyPlaying)
+    data["playing"] = currentlyPlaying["is_playing"]
+    data["data"] = currentlyPlaying
+    data["time"] = datetime.datetime.now()
+    print(f"Got new Spotify data [{'playing' if data['playing'] else 'paused'}]")
 
 def next():
+    global needNewDataPLZ
     response = requests.post("https://api.spotify.com/v1/me/player/next", headers={'Authorization':f'Bearer {getDaToken()}'})
-    if response.status_code == 200: get_data()
+    if response.status_code == 200: needNewDataPLZ = True
     else: print(f"Error: {response.status_code}")
 def previous():
+    global needNewDataPLZ
     response = requests.post("https://api.spotify.com/v1/me/player/previous", headers={'Authorization':f'Bearer {getDaToken()}'})
-    if response.status_code == 200: get_data()
+    if response.status_code == 200: needNewDataPLZ = True
     else: print(f"Error: {response.status_code}")
 def play():
     response = requests.put("https://api.spotify.com/v1/me/player/play", headers={'Authorization':f'Bearer {getDaToken()}'})
-    if response.status_code == 200: olddata["playing"] = True
+    if response.status_code == 200: data["playing"] = True
     else: print(f"Error: {response.status_code}")
 def pause():
     response = requests.put("https://api.spotify.com/v1/me/player/pause", headers={'Authorization':f'Bearer {getDaToken()}'})
-    if response.status_code == 200: olddata["playing"] = False
+    if response.status_code == 200: data["playing"] = False
     else: print(f"Error: {response.status_code}")
 
-def btn(): (pause() if olddata["playing"] else play())
+def btn(): (pause() if data["playing"] else play())
 
 def dial(e):
     global prev_dial_turn
     if prev_dial_turn > datetime.datetime.now().timestamp() - 1: return
     prev_dial_turn = datetime.datetime.now().timestamp()
     
-    if e == "2H": next()
+    if e == "2R": next()
     elif e == "2L": previous()
 
-def get(fn):
-    global olddata, covers
-    
-    # Get new data from spotify every 10 seconds
-    if olddata["time"] < time.time()-10: get_data()
+def threadedData():
+    global data, oldTS, needNewDataPLZ
+    while True:
+        # Get new data from spotify (every 10 seconds) or (system sendt skip request) or (song just ended)
+        delta = (datetime.datetime.now() - oldTS)
+        # print(delta.seconds, oldTS)
+        if delta.seconds > 10 or needNewDataPLZ or (data["playing"] and (data["data"]["progress_ms"]+(delta/MS)-100 >= data["data"]["item"]["duration_ms"])):
+            get_data()
+            needNewDataPLZ = False
 
-    # If the song just ended, get new data
-    elif (olddata["playing"] and (olddata["data"]["progress_ms"]+(time.time()-olddata["time"])*1000)-100 >= olddata["data"]["item"]["duration_ms"]):
-        get_data()
+        time.sleep(0.5)
+
+def get(fn):
+    global data, covers
 
     im = Image.new(mode="RGB", size=(64, 32))
 
     # If you are not playing annything on spotify return black screen
-    if olddata["data"] == {}:
+    if data["data"] == {}:
         return functions.PIL2frame(im)
+    
+    delta = (datetime.datetime.now() - data["time"])
 
     # Set localdata to stored data
-    currentlyPlaying = olddata["data"]
+    currentlyPlaying = data["data"]
 
     # get the cover url, and download it if not allready
     coverURL = currentlyPlaying["item"]["album"]["images"][0]["url"]
     if coverURL not in covers:
-        covers[coverURL] = Image.open(requests.get(currentlyPlaying["item"]["album"]["images"][-1]["url"], stream=True).raw).resize((32,32))
-        if len(covers) > 20: covers = covers[-20:]
+        covers[coverURL] = Image.open(requests.get(currentlyPlaying["item"]["album"]["images"][-1]["url"], stream=True).raw).resize((32,32), Image.Resampling.HAMMING)
+        if len(covers) > 20: del covers[list(covers.keys())[0]]
+        print(f"There is now {len(covers)} saved covers.")
 
     infoArea = Image.new(mode="RGB", size=(30,30))
     info = ImageDraw.Draw(infoArea)
@@ -134,11 +150,11 @@ def get(fn):
         info.text(textPos, f"{artists}    {artists}", font=small05, fill="#888")
     else: info.text((0,8), artists, font=small05, fill="#888")
 
-    progress = ((currentlyPlaying["progress_ms"]+((time.time()-olddata["time"]) if olddata["playing"] else 0)*1000)/currentlyPlaying["item"]["duration_ms"])
+    progress = ((currentlyPlaying["progress_ms"]+(delta/MS if data["playing"] else 0))/currentlyPlaying["item"]["duration_ms"])
     info.line([(0,29),(29,29)], fill="#fff", width=1)
     info.line([(0,29),(round(progress*30),29)], fill=spotifyColor, width=1)
 
-    info.text((12, 20), text=("1" if olddata["playing"] else "0"), font=icons06, fill=spotifyColor)
+    info.text((12, 20), text=("1" if data["playing"] else "0"), font=icons06, fill=spotifyColor)
 
     im.paste(covers[coverURL], (0,0))
     im.paste(infoArea, (33,1))
