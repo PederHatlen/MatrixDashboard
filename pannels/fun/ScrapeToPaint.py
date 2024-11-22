@@ -15,9 +15,9 @@ def get(fn = 0):
 def dial(e):
     print(e)
     global x, y
-    if e == "1H":   x += (1 if x < 63 else 0)
+    if e == "1R":   x += (1 if x < 63 else 0)
     elif e == "1L": x -= (1 if x > 0 else 0)
-    elif e == "2H": y += (1 if y < 31 else 0)
+    elif e == "2R": y += (1 if y < 31 else 0)
     elif e == "2L": y -= (1 if y > 0 else 0)
     if (x, y) not in drawing: drawing.append((x,y))
 
