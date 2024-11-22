@@ -9,7 +9,7 @@ total = 1
 
 def dial(e):
     global current, total
-    if e == "1H": current = (current+1 if current < total else 0)
+    if e == "1R": current = (current+1 if current < total else 0)
     elif e == "1L": current = (current-1 if current > 0 else total)
 
 def get(ts):
@@ -17,7 +17,7 @@ def get(ts):
 
     hexTime = ""
     if current == 0: hexTime = f"#{str(now.hour).rjust(2,'0')}{str(now.minute).rjust(2,'0')}{str(now.second).rjust(2,'0')}"                         # Clock as color
-    if current == 1:   hexTime = f"#{round((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()*100):0>6X}".upper()       # Milliseconds -> Hex
+    if current == 1: hexTime = f"#{round((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()*100):0>6X}".upper()       # Milliseconds -> Hex
 
     im = Image.new(mode="RGB", size=(64, 32), color=hexTime)
     d = ImageDraw.Draw(im)
