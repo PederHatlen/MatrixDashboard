@@ -154,7 +154,7 @@ def get(fn):
     info.line([(0,29),(29,29)], fill="#fff", width=1)
     info.line([(0,29),(round(progress*30),29)], fill=spotifyColor, width=1)
 
-    info.text((12, 20), text=("1" if data["playing"] else "0"), font=icons06, fill=spotifyColor)
+    info.text((12, 20), text=("1" if data["playing"] else "0"), font=icons07, fill=spotifyColor)
 
     im.paste(covers[coverURL], (0,0))
     im.paste(infoArea, (33,1))
