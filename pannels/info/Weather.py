@@ -1,4 +1,4 @@
-import datetime, requests, json, textwrap
+import datetime, requests, json, textwrap, locale
 from PIL import Image, ImageDraw
 from functions import *
 import numpy as np
@@ -22,9 +22,12 @@ def get_data():
     global expires
     headers = {'User-Agent':'https://github.com/PederHatlen/MatrixDashboard email:pederhatlen@gmail.com',}
     response = requests.get(f"https://api.met.no/weatherapi/locationforecast/2.0/complete?lat={round(lat,4)}&lon={round(long,4)}",headers=headers)
-    print(response.json(), response.headers)
-    expires = datetime.datetime.strptime(response.headers["Expires"][:-4], "%a, %d %b %Y %H:%M:%S").replace(tzinfo=datetime.timezone.utc)
-    print(expires)
+    try: expires = datetime.datetime.strptime(response.headers["Expires"][:-4], "%a, %d %b %Y %H:%M:%S", ).replace(tzinfo=datetime.timezone.utc)
+    except Exception as E:
+        print(E)
+        expires = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=4)
+        print("Could not parse expiration time (using +4 hours) Error: {E}")
+    print(f"Got new weatherdata, expiration: {expires}")
     return response.json()
 
 def get_data_fake():
