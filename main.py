@@ -3,6 +3,8 @@ from PIL import Image, ImageFont, ImageDraw
 from threading import Thread
 from functions import *
 
+from flask import request
+
 # Initialize the webserver/running screen emulator
 socketio = virtual_display.run(1337, allow_cors=True)
 
@@ -25,6 +27,7 @@ menuColor = {
 }
 
 consolerender = False
+slowConnections = []
 
 spotifyWasPlaying = False
 autoSelected = False
@@ -49,11 +52,11 @@ def menuTurn(dir):
 def render(frame):
     global oldoutTS
     now = datetime.datetime.now().timestamp()
-    if now - oldoutTS >= 1 and consolerender:
+    if now - oldoutTS >= 1:
         oldoutTS = now
-        functions.renderConsole(frame)
-        print(f"Current temperature: {int(open('/sys/class/thermal/thermal_zone0/temp').read())/1000}")
-    socketio.emit("refresh", frame)
+        if consolerender: functions.renderConsole(frame)
+        return socketio.emit("refresh", frame)
+    socketio.emit("refresh", frame, skip_sid=slowConnections)
 
 def menu(pannels = pannels):
     im = Image.new(mode="RGB", size=(64, 32))
@@ -94,7 +97,6 @@ class dial:
 menuDial = dial(1, 26, 20, 21, True)
 dial1 = dial(2, 16, 19, 13)
 
-
 def autoSelector():
     global spotifyWasPlaying, menuSelected, pNames, oldSelected, autoSelected
 
@@ -110,6 +112,10 @@ def autoSelector():
     
     spotifyWasPlaying = spotifyIsPlaying
 
+@socketio.on("slow")
+def slow_connection(data=""):
+    slowConnections.append(request.sid)
+    print(f"{request.sid} requested slow connection.")
 
 @socketio.on('inp')
 def on_connection(data):
@@ -123,7 +129,7 @@ def on_connection(data):
 
 while True:
     start = time.time()
-    # autoSelector()
+    autoSelector()
 
     if not menuActive:
         try: render(pannels.packages[menuSelected].get(framenum))

@@ -5,13 +5,16 @@ def run(port, host="0.0.0.0", allow_cors=False):
     app.config['SECRET_KEY']=secrets.token_urlsafe(16)
 
     @app.route("/v")
-    @app.route("/viewer")
-    @app.route("/viewer.html")
-    def viewer(): return flask.send_file("./web/v.html")
+    def viewer():return flask.send_file("./web/viewer.html")
+
+    @app.route("/s")
+    def slow():return flask.send_file("./web/slow.html")
 
     @app.route("/")
     @app.route("/<path:path>")
-    def index(path="index.html"): return flask.send_from_directory(f"./web/",path)
+    def index(path="index.html"):
+        if "." not in path: path = f"{path}.html"
+        return flask.send_from_directory("./web/",path)
     socketio=flask_socketio.SocketIO(app, cors_allowed_origins=("*" if allow_cors else ""))
 
     print("Starting web server!")
