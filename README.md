@@ -28,9 +28,35 @@ I'm just having fun here : )
   * The rendering function takes a matrix of hex values, PIL Image to Matrix function is also supplied in the functions package.
   * The pannel is automatically picked up when in the pannels folder.
 
+## Dependencies
+
+gpiozero flask_socketio flask Pillow numpy (astral psutil docker, for sky and system pannels)
+
+"""
+python3 -m pip install flask-socketio pillow numpy astral psutil docker
+"""
 
 ## Images
 Spotify Integration (The text scroll, I promise)
 ![Spotify Integration](./images/Spotify_Illustration.png)
 Sun Integration
 ![Sun Integration](./images/Sun_Illustration.png)
+
+
+# BarrelJack Pinout:
+
+Outside = Long  = GND
+Pin     = short = VC+
+
+# In Adafruit Piomatter
+
+the file pins.h must be changed before compilation, to include the pin layout  
+I use this one: 
+```
+struct adafruit_matrix_bonnet_pinout {
+    static constexpr pin_t PIN_RGB[] = {2,3,4,17,27,22};
+    static constexpr pin_t PIN_ADDR[] = {14,15,18,23};
+    static constexpr pin_t PIN_OE = 24;   // /OE: output enable when LOW
+    static constexpr pin_t PIN_CLK = 10; // SRCLK: clocks on RISING edge
+    static constexpr pin_t PIN_LAT = 9; // RCLK: latches on RISING edge
+```

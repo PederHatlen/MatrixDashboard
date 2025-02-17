@@ -1,144 +1,134 @@
-import time, virtual_display, functions, pannels, gpiozero, datetime
-from PIL import Image, ImageFont, ImageDraw
-from threading import Thread
+import Display, virtual_display, menu, pannels
+import time, gpiozero, datetime
 from functions import *
+from threading import Thread
 
 from flask import request
 
 # Initialize the webserver/running screen emulator
 socketio = virtual_display.run(1337, allow_cors=True)
 
-small10 = ImageFont.truetype(f"{functions.PATH}/fonts/small10.ttf", 10)
-small05 = ImageFont.truetype(f"{functions.PATH}/fonts/small05.ttf", 5)
-
 framenum = 0
 oldoutTS = 0
-
-pNames = pannels.__all__
-
-menuSelected = pNames.index("Clock") # Default pannel can be sett here
-
-menuActive = False
-menuColor = {
-    "clocks":color["orange"],
-    "debug":color["yellow"],
-    "fun":color["purple"],
-    "info":color["green"]
-}
+oldimage = pannels.packages["Blank"].get()
 
 consolerender = False
 slowConnections = []
 
 spotifyWasPlaying = False
 autoSelected = False
-oldSelected = 0
+oldSelected = ""
+lastRenderEvent = datetime.datetime.now()
 
-spotifyRunner = Thread(target=pannels.packages[pNames.index("Spotify")].threadedData, name="SpotifyRunner", daemon=True)
+IsMenuActive= False
+
+spotifyRunner = Thread(target=pannels.packages["Spotify"].threadedData, name="SpotifyRunner", daemon=True)
 spotifyRunner.start()
 
-def toggleMenu():
-    global menuActive
-    menuActive = not menuActive
-    if menuActive: render(menu())
-
-def menuTurn(dir): 
-    global menuActive, menuSelected, autoSelected
-    if not menuActive: return menuDial.dial(dir)
-    elif dir == "1R": menuSelected = (menuSelected+1) % len(pannels.packages)
-    elif dir == "1L": menuSelected = ((menuSelected-1) if menuSelected > 0 else len(pannels.packages)-1)
-    autoSelected = False
-    render(menu())
-
-def render(frame):
-    global oldoutTS
-    now = datetime.datetime.now().timestamp()
-    if now - oldoutTS >= 1:
-        oldoutTS = now
-        if consolerender: functions.renderConsole(frame)
-        return socketio.emit("refresh", frame)
-    socketio.emit("refresh", frame, skip_sid=slowConnections)
-
-def menu(pannels = pannels):
-    im = Image.new(mode="RGB", size=(64, 32))
-    d = ImageDraw.Draw(im)
-
-    for i in range(len(pNames)):
-        x, y = ((i*4)%64), ((i//64)*4)
-        if i == menuSelected: d.rectangle(((x, y), (x+2, y+2)), "#fff")
-        d.point((x+1, y+1), menuColor[pannels.menu[pNames[i]]])
-
-    d.text((0, 8), pannels.menu[pNames[menuSelected]], menuColor[pannels.menu[pNames[menuSelected]]], small05)
-    d.text((0, 16), pNames[menuSelected], "#fff", small05)
-
-    return functions.PIL2frame(im)
-
 class dial:
-    def __init__(self, dialNumber, BTNpin, D1, D2, menu = False):
+    def __init__(self, dialNumber, BTNpin, D1, D2, isMenu = False):
         self.BTN = gpiozero.Button(BTNpin,bounce_time=0.1)
         self.DIAL = gpiozero.RotaryEncoder(D1,D2, wrap=True, max_steps=0)
         self.dialNumber = dialNumber
 
-        self.BTN.when_activated = (toggleMenu if menu else self.btn)
-        self.DIAL.when_rotated_clockwise = (lambda: menuTurn(f"{self.dialNumber}R") if menu else self.dial(f"{self.dialNumber}R"))
-        self.DIAL.when_rotated_counter_clockwise = (lambda: menuTurn(f"{self.dialNumber}L") if menu else self.dial(f"{self.dialNumber}L"))
+        self.isMenu = isMenu
+
+        self.BTN.when_activated = self.btn
+        self.DIAL.when_rotated_clockwise = (lambda: self.dial("R"))
+        self.DIAL.when_rotated_counter_clockwise = (lambda: self.dial("L"))
     
     def dial(self, dir):
-        print(dir)
-        try: pannels.packages[menuSelected].dial(dir)
-        except AttributeError: return print(f"{menuSelected} doesn't support dial")
-        return render(pannels.packages[menuSelected].get(framenum))
+        # print(dir)
+        if IsMenuActive:
+            menu.dial(f"{self.dialNumber}{dir}")
+            return render(menu.get())
+
+        try: pannels.packages[menu.selected].dial(f"{self.dialNumber}{dir}")
+        except AttributeError: return print(f"{menu.selected} doesn't support dial")
+        return render(pannels.packages[menu.selected].get(framenum))
     
     def btn(self):
-        try: pannels.packages[menuSelected].btn()
-        except AttributeError: return print(f"{menuSelected} doesn't support buttons")
-        return render(pannels.packages[menuSelected].get(framenum))
+        if self.isMenu:
+            global IsMenuActive
+            IsMenuActive = not IsMenuActive
+            if IsMenuActive: render(menu.get())
+            else: pannels.packages[menu.selected].needsRendering = True
+            return
+        
+        try: pannels.packages[menu.selected].btn()
+        except AttributeError: return print(f"{menu.selected} doesn't support buttons")
+        return render(pannels.packages[menu.selected].get(framenum))
 
 # Dials and buttons
-menuDial = dial(1, 26, 20, 21, True)
-dial1 = dial(2, 16, 19, 13)
+dial0 = dial(0, 26, 20, 21, True)
+dial1 = dial(1, 16, 19, 13)
+
+def render(im):
+    global oldimage, lastRenderEvent
+    lastRenderEvent = datetime.datetime.now()
+    if oldimage != im:
+        oldimage = im
+        Display.render(im)
+        sockFrame = PIL2Socket(im)
+        if consolerender: renderConsole(sockFrame)
+        return socketio.emit("refresh", sockFrame)
 
 def autoSelector():
-    global spotifyWasPlaying, menuSelected, pNames, oldSelected, autoSelected
+    global spotifyWasPlaying, menu, oldSelected, autoSelected
 
-    spotifyIsPlaying = pannels.packages[pNames.index("Spotify")].data["playing"]
+    spotifyIsPlaying = pannels.packages["Spotify"].data["playing"]
 
     if not spotifyWasPlaying and spotifyIsPlaying:
-        oldSelected = menuSelected
-        menuSelected = pNames.index("Spotify")
+        oldSelected = menu.selected
+        menu.selected = "Spotify"
         autoSelected = True
 
     elif spotifyWasPlaying and not spotifyIsPlaying and autoSelected:
-        menuSelected = oldSelected
+        menu.selected = oldSelected
     
     spotifyWasPlaying = spotifyIsPlaying
 
+@socketio.on("connect")
+def onConnect(data=""):
+    socketio.emit("refresh", PIL2Socket(oldimage), to=request.sid)
+
 @socketio.on("slow")
 def slow_connection(data=""):
-    slowConnections.append(request.sid)
-    print(f"{request.sid} requested slow connection.")
+    if request.sid in slowConnections:
+        slowConnections.remove(request.sid)
+        print(f"{request.sid} requested speedy connection.")
+    else:
+        slowConnections.append(request.sid)
+        print(f"{request.sid} requested slow connection.")
 
 @socketio.on('inp')
 def on_connection(data):
     print(f"Input from virtual display: {data}") #type:ignore
     if "dir" in data: 
-        if data["dir"][0] == "1": menuTurn(data["dir"])
-        else: dial1.dial(data["dir"])
+        if data["dir"][0] == "0": dial0.dial(data["dir"][1])
+        elif data["dir"][0] == "1": dial1.dial(data["dir"][1])
     elif "btn" in data:
-        if data["btn"] == 1: toggleMenu()
-        elif data["btn"] == 2: dial1.btn()
+        if data["btn"] == 0: dial0.btn()
+        elif data["btn"] == 1: dial1.btn()
 
-while True:
-    start = time.time()
-    autoSelector()
+if __name__ == "__main__":
+    while True:
+        start = time.time()
+        autoSelector()
 
-    if not menuActive:
-        try: render(pannels.packages[menuSelected].get(framenum))
-        except Exception as e: print(f"Error: {e}")
-    
-    framenum += 1
+        if IsMenuActive: render(menu.get())
+        else:
+            try: doRender = pannels.packages[menu.selected].wantsRender(lastRenderEvent)
+            except AttributeError: doRender = True
 
-    # print(f"Computation time: {round(time.time() - start, 3)}s") 
-    # compTime = round(time.time() - start, 3)
-    # if compTime >= 0.1: print(f"over: {compTime}")
+            if doRender:
+                try: render(pannels.packages[menu.selected].get(framenum))
+                except Exception as e: print(f"Error: {e}")
+        
+        framenum += 1
 
-    time.sleep(0.1 - min(0.05, round(time.time() - start, 3)))
+        # print(f"Computation time: {round(time.time() - start, 3)}s") 
+        # compTime = round(time.time() - start, 3)
+        # if compTime >= 0.1: print(f"over: {compTime}")
+
+        time.sleep(0.1 - min(0.05, round(time.time() - start, 3)))
