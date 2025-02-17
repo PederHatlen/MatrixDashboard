@@ -13,7 +13,7 @@ def setlocale(name):
 
 small05 = font["small05"]
 
-def get(ts):
+def get(fn = 0):
     now = datetime.datetime.now()
 
     im = Image.new(mode="RGB", size=(64, 32))
@@ -52,4 +52,4 @@ def get(ts):
 
     # d.point((*[(x*2, 0) for x in range(32)], *[(0, y*2) for y in range(16)]))
 
-    return PIL2frame(im)
+    return im

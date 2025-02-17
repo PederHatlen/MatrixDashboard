@@ -27,12 +27,12 @@
         });
         document.body.onkeydown = (e)=>{
             switch(e.key){
-                case "a": s.emit('inp', {'dir':'1L'});break;
-                case "d": s.emit('inp', {'dir':'1R'});break;
-                case "s": s.emit('inp', {'btn':1});break;
-                case "ArrowLeft": s.emit('inp', {'dir':'2L'});break;
-                case "ArrowRight": s.emit('inp', {'dir':'2R'});break;
-                case "ArrowDown": s.emit('inp', {'btn':2});break;
+                case "a": s.emit('inp', {'dir':'0L'});break;
+                case "d": s.emit('inp', {'dir':'0R'});break;
+                case "s": s.emit('inp', {'btn':0});break;
+                case "ArrowLeft": s.emit('inp', {'dir':'1L'});break;
+                case "ArrowRight": s.emit('inp', {'dir':'1R'});break;
+                case "ArrowDown": s.emit('inp', {'btn':1});break;
             };
         };
     </script>

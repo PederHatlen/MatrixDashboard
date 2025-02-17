@@ -1,2 +1,2 @@
-import os
-def get(ts): return [["#"+"".join(["000000",os.urandom(3).hex()])[-6:] for y in range(64)] for x in range(32)]
+import random, numpy as np, PIL.Image
+def get(fn = 0): return PIL.Image.fromarray(np.uint8([[[random.randint(0,255), random.randint(0,255), random.randint(0,255)] for y in range(64)] for x in range(32)])).convert('RGB')

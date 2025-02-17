@@ -1,4 +1,3 @@
-import functions
 from PIL import Image, ImageDraw
 
 x, y = 32, 16
@@ -10,15 +9,15 @@ def get(fn = 0):
     d = ImageDraw.Draw(im)
     d.point(drawing, "#fff")
 
-    return functions.PIL2frame(im)
+    return im
 
 def dial(e):
     print(e)
     global x, y
-    if e == "1R":   x += (1 if x < 63 else 0)
-    elif e == "1L": x -= (1 if x > 0 else 0)
-    elif e == "2R": y += (1 if y < 31 else 0)
-    elif e == "2L": y -= (1 if y > 0 else 0)
+    if e == "0R":   x += (1 if x < 63 else 0)
+    elif e == "0L": x -= (1 if x > 0 else 0)
+    elif e == "1R": y += (1 if y < 31 else 0)
+    elif e == "1L": y -= (1 if y > 0 else 0)
     if (x, y) not in drawing: drawing.append((x,y))
 
 def btn(): 

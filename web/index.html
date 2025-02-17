@@ -15,16 +15,17 @@
     <canvas width="64" height="32" style="width:100vmin;image-rendering:pixelated;"></canvas>
     <div style="gap:2rem;padding:2rem;">
         <div style="color:#f80">
+            <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'0L'})">rotate_left</span>
+            <span class="material-symbols-outlined" onclick="s.emit('inp', {'btn':0})">radio_button_checked</span>
+            <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'0R'})">rotate_right</span>
+        </div>
+        <div>
             <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'1L'})">rotate_left</span>
             <span class="material-symbols-outlined" onclick="s.emit('inp', {'btn':1})">radio_button_checked</span>
             <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'1R'})">rotate_right</span>
         </div>
-        <div>
-            <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'2L'})">rotate_left</span>
-            <span class="material-symbols-outlined" onclick="s.emit('inp', {'btn':2})">radio_button_checked</span>
-            <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'2R'})">rotate_right</span>
-        </div>
         <span class="material-symbols-outlined" onclick="document.body.requestFullscreen()">fullscreen</span>
+        <span class="material-symbols-outlined" onclick="s.emit('slow')">hourglass</span>
 
     </div>
     <div>Frametime:&nbsp;<span id="frametime"></span>ms &nbsp;&nbsp; CompTime:&nbsp;<span id="comptime"></span>ms</div>
@@ -33,6 +34,7 @@
         var prevFrame = performance.now();
 
         var s=io();
+        s.emit('slow');
         s.on("refresh",img=>{
             document.getElementById("frametime").innerHTML = Math.round(performance.now() - prevFrame);
             prevFrame = performance.now()
@@ -48,12 +50,12 @@
 
         document.body.onkeydown = (e)=>{
             switch(e.key){
-                case "a": s.emit('inp', {'dir':'1L'});break;
-                case "d": s.emit('inp', {'dir':'1R'});break;
-                case "s": s.emit('inp', {'btn':1});break;
-                case "ArrowLeft": s.emit('inp', {'dir':'2L'});break;
-                case "ArrowRight": s.emit('inp', {'dir':'2R'});break;
-                case "ArrowDown": s.emit('inp', {'btn':2});break;
+                case "a": s.emit('inp', {'dir':'0L'});break;
+                case "d": s.emit('inp', {'dir':'0R'});break;
+                case "s": s.emit('inp', {'btn':0});break;
+                case "ArrowLeft": s.emit('inp', {'dir':'1L'});break;
+                case "ArrowRight": s.emit('inp', {'dir':'1R'});break;
+                case "ArrowDown": s.emit('inp', {'btn':1});break;
             };
         };
     </script>

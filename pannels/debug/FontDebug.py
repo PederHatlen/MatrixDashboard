@@ -3,7 +3,7 @@ from functions import *
 
 small05 = font["small05"]
 
-def get(ts):
+def get(fn = 0):
     im = Image.new(mode="RGB", size=(64, 32))
     d = ImageDraw.Draw(im)
     d.fontmode = "1"
@@ -13,4 +13,4 @@ def get(ts):
     for c in range(len(color.keys())):
         d.rectangle(((4*c + 1, 23), (4*c + 4, 28)), fill=list(color.values())[c])
 
-    return PIL2frame(im)
+    return im

@@ -38,5 +38,4 @@ def get(fn):
         trails.remove(t)
         trails.append(trail(y=0))
 
-
-    return functions.PIL2frame(im)
+    return im

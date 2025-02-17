@@ -1,5 +1,5 @@
 import requests, time, json, base64, datetime
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageEnhance
 from functions import *
 
 
@@ -13,10 +13,12 @@ all these needs to be added to the json file "spotifysecrets.json" in the root o
 
 """
 
+LOG_NEWDATA = False
+
 small05 = font["small05"]
 icons07 = font["icons07"]
 
-spotifyColor = color["mint"]
+spotifyColor = color["spotify"]
 scrollSpeed = 0.5 # (pixel/50ms)
 
 prev_dial_turn = 0
@@ -60,7 +62,7 @@ def get_data():
         data["playing"] = False
         return
     if response.status_code != 200:
-        print("Not playing annything")
+        if LOG_NEWDATA: print("Not playing annything")
         data["playing"] = False
         return
     currentlyPlaying = response.json()
@@ -68,7 +70,7 @@ def get_data():
     data["playing"] = currentlyPlaying["is_playing"]
     data["data"] = currentlyPlaying
     data["time"] = datetime.datetime.now()
-    print(f"Got new Spotify data [{'playing' if data['playing'] else 'paused'}]")
+    if LOG_NEWDATA: print(f"Got new Spotify data [{'playing' if data['playing'] else 'paused'}]")
 
 def next():
     global needNewDataPLZ
@@ -96,8 +98,8 @@ def dial(e):
     if prev_dial_turn > datetime.datetime.now().timestamp() - 1: return
     prev_dial_turn = datetime.datetime.now().timestamp()
     
-    if e == "2R": next()
-    elif e == "2L": previous()
+    if e == "1R": next()
+    elif e == "1L": previous()
 
 def threadedData():
     global data, oldTS, needNewDataPLZ
@@ -105,13 +107,13 @@ def threadedData():
         # Get new data from spotify (every 10 seconds) or (system sendt skip request) or (song just ended)
         delta = (datetime.datetime.now() - oldTS)
         # print(delta.seconds, oldTS)
-        if delta.seconds > 10 or needNewDataPLZ or (data["playing"] and (data["data"]["progress_ms"]+(delta/MS)-100 >= data["data"]["item"]["duration_ms"])):
+        if delta.seconds > 2 or needNewDataPLZ or (data["playing"] and (data["data"]["progress_ms"]+(delta/MS)-100 >= data["data"]["item"]["duration_ms"])):
             get_data()
             needNewDataPLZ = False
 
         time.sleep(0.5)
 
-def get(fn):
+def get(fn = 0):
     global data, covers
 
     im = Image.new(mode="RGB", size=(64, 32))
@@ -129,6 +131,7 @@ def get(fn):
     coverURL = currentlyPlaying["item"]["album"]["images"][0]["url"]
     if coverURL not in covers:
         covers[coverURL] = Image.open(requests.get(currentlyPlaying["item"]["album"]["images"][-1]["url"], stream=True).raw).resize((32,32), Image.Resampling.HAMMING)
+        covers[coverURL] = ImageEnhance.Contrast(covers[coverURL]).enhance(1.25)
         if len(covers) > 20: del covers[list(covers.keys())[0]]
         print(f"There is now {len(covers)} saved covers.")
 
@@ -137,18 +140,22 @@ def get(fn):
     info.fontmode = "1"
 
     titlelength = small05.getlength(f'{currentlyPlaying["item"]["name"]}    ')
+    artists = "  -  ".join([e["name"] for e in currentlyPlaying["item"]["artists"]])
+    artistlength = small05.getlength(f"{artists}    ")
+
+    scrolLen = int(fn*scrollSpeed)
 
     if titlelength > 32: 
-        textPos = (-int((fn*scrollSpeed)%(max(titlelength, 32))),0)
+        textPos = (-int(scrolLen%(max(titlelength, 32))),0)
         info.text(textPos, "    ".join([currentlyPlaying["item"]["name"]]*3), font=small05, fill=(255,255,255))
-    else: info.text((0,0), currentlyPlaying["item"]["name"], font=small05, fill="#fff")
-    
-    artists = "    ".join([e["name"] for e in currentlyPlaying["item"]["artists"]])
-    artistlength = small05.getlength(f"{artists}    ")
+    else:
+        info.text((0,0), currentlyPlaying["item"]["name"], font=small05, fill="#fff")
+
     if artistlength > 32:
-        textPos = (-int((fn*scrollSpeed)%(max(artistlength, 32))),8)
+        textPos = (-int(scrolLen%(max(artistlength, 32))),8)
         info.text(textPos, f"{artists}    {artists}", font=small05, fill="#888")
-    else: info.text((0,8), artists, font=small05, fill="#888")
+    else:
+        info.text((0,8), artists, font=small05, fill="#888")
 
     progress = ((currentlyPlaying["progress_ms"]+(delta/MS if data["playing"] else 0))/currentlyPlaying["item"]["duration_ms"])
     info.line([(0,29),(29,29)], fill="#fff", width=1)
@@ -158,5 +165,6 @@ def get(fn):
 
     im.paste(covers[coverURL], (0,0))
     im.paste(infoArea, (33,1))
+    # im.paste(corrected.enhance(1.25),(32,0))
 
-    return PIL2frame(im)
+    return im

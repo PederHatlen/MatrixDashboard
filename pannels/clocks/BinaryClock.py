@@ -1,7 +1,7 @@
-import datetime, functions
+import datetime
 from PIL import Image, ImageDraw
 
-def get(ts):
+def get(fn = 0):
     now = datetime.datetime.now()
 
     im = Image.new(mode="RGB", size=(64, 32))
@@ -20,4 +20,4 @@ def get(ts):
             if int(n) | (2**y) == int(n): d.rectangle(((xc,yc), (xc+ps-1,yc+ps-1)), "#fff")     # if number is the same when you turn on bit at n position bit is in number
             elif y<3 or x%2: d.rectangle(((xc,yc), (xc+ps-1,yc+ps-1)), "#222")                  # The times 10 spot should be 1 lower (hour has no need for 3, but it looks bad without)
 
-    return functions.PIL2frame(im)
+    return im

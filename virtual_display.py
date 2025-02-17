@@ -1,4 +1,4 @@
-import secrets, flask_socketio, flask
+import secrets, flask_socketio, flask, threading, gevent
 
 def run(port, host="0.0.0.0", allow_cors=False):
     app=flask.Flask(__name__)
@@ -15,8 +15,8 @@ def run(port, host="0.0.0.0", allow_cors=False):
     def index(path="index.html"):
         if "." not in path: path = f"{path}.html"
         return flask.send_from_directory("./web/",path)
-    socketio=flask_socketio.SocketIO(app, cors_allowed_origins=("*" if allow_cors else ""))
+    socketio=flask_socketio.SocketIO(app, async_mode='threading', cors_allowed_origins=("*" if allow_cors else ""))
 
     print("Starting web server!")
-    socketio.start_background_task(socketio.run, app=app, port=port, host=host, debug=False)
+    threading.Thread(target=(lambda:socketio.run(app=app, port=port, host=host, debug=False))).start()
     return socketio

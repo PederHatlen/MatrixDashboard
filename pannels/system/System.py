@@ -7,7 +7,7 @@ small05 = font["small05"]
 isRoot = (os.geteuid() == 0)
 if isRoot: client = docker.from_env()
 
-def get(ts):
+def get(fn = 0):
     im = Image.new(mode="RGB", size=(64, 32))
     d = ImageDraw.Draw(im)  
     d.fontmode = "1"

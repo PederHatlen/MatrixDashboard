@@ -23,7 +23,8 @@ color = {
     "purple":"#8000FF",
     "pink":"#FF00FF",
     "magenta":"#FF0080",
-    "white":"#FFFFFF"
+    "white":"#FFFFFF",
+    "spotify":"#1ED760"
 }
 
 def clamp8(x): return min(255, max(0, int(x)))
@@ -39,11 +40,7 @@ def hex2lum(hex): return rgb2lum(hex2rgb(hex))
 def combineFrames(f1, f2):
     return [[(f1[x][y] if f1[x][y] != "#000000" else f2[x][y]) for y in range(64)] for x in range(32)]
 
-def renderConsole(frame):
-    print("\n".join([" ".join([asciiTable[int(hex2lum(y)*len(asciiTable))] for y in x]) for x in frame]))
-    # print(, end=" ")
-    # for x in frame:
-    #     for y in x: 
-    #         print()
+def renderConsole(frame): print("\n".join([" ".join([asciiTable[int(hex2lum(y)*len(asciiTable))] for y in x]) for x in frame]))
 
-def PIL2frame(im): return [[rgb2hex(y) for y in x] for x in np.array(im).tolist()]
+def PIL2frame(im): return im
+def PIL2Socket(im): return [[rgb2hex(y) for y in x] for x in np.array(im).tolist()]

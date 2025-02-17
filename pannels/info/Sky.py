@@ -54,14 +54,18 @@ def getSunAltitude(t:datetime.datetime, lat = lat, long = long):  # Tyholttårne
 dayoffset = 0
 def dial(e):
     global dayoffset
-    if e == "2R": dayoffset+=1
-    elif e == "2L": dayoffset-=1
+    if e == "1R": dayoffset+=1
+    elif e == "1L": dayoffset-=1
+    
+def btn():
+    global dayoffset
+    dayoffset = 0
 
-def get(fn):
+def get(fn = 0):
     global oldim, fn_last, dayoffset
     
-    if (fn - fn_last) < 10: return PIL2frame(oldim)
-    fn_last = fn
+    # if (fn - fn_last) < 10: return PIL2frame(oldim)
+    # fn_last = fn
     
     im = Image.new(mode="RGB", size=(64, 32))
     d = ImageDraw.Draw(im)
@@ -88,4 +92,4 @@ def get(fn):
 
     oldim = im
 
-    return PIL2frame(im)
+    return im

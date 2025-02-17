@@ -1,4 +1,4 @@
-import datetime, functions
+import datetime
 from PIL import Image, ImageDraw
 from functions import *
 
@@ -12,7 +12,7 @@ def dial(e):
     if e == "1R": current = (current+1 if current < total else 0)
     elif e == "1L": current = (current-1 if current > 0 else total)
 
-def get(ts):
+def get(fn = 0):
     now = datetime.datetime.now()
 
     hexTime = ""
@@ -25,4 +25,4 @@ def get(ts):
 
     d.text((5,5), hexTime, font=small05, fill=(255,255,255))
 
-    return functions.PIL2frame(im)
+    return im
