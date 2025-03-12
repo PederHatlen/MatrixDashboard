@@ -1,27 +1,82 @@
-import datetime
+import functions, datetime, random
 import numpy as np
 import astral.sun, astral.moon # Cheating
 from PIL import Image, ImageDraw
-from math import radians, sin, cos, atan2, asin, degrees
-from functions import *
+from math import radians, sin, cos, atan2, asin, degrees, pi
 
-small05 = font["small05"]
+small05 = functions.font["small05"]
 
-BC = 0
-GC = 64
-WC = 255
+DATE_COLOR    = "#7BD3EA"
+SUNRISE_COLOR = (255, 168, 92)
+SUNSET_COLOR  = (255, 107, 107)
+SUN_COLOR     = (255, 241, 117)
+MOON_COLOR    = (21, 56, 99)
+BACKGROUND    = "#7BD3EA"
+
+BC = (0, 0, 0)
+GC = MOON_COLOR
+WC = (255, 255, 255)
 
 # Moon phase images
 moonPhases = {
-    0:[[BC,GC,GC,GC,GC,BC],[GC,GC,GC,GC,GC,GC],[GC,GC,GC,GC,GC,GC],[GC,GC,GC,GC,GC,GC],[GC,GC,GC,GC,GC,GC],[BC,GC,GC,GC,GC,BC]],
-    1:[[BC,GC,GC,WC,WC,BC],[GC,GC,GC,GC,WC,WC],[GC,GC,GC,GC,GC,WC],[GC,GC,GC,GC,GC,WC],[GC,GC,GC,GC,WC,WC],[BC,GC,GC,WC,WC,BC]],
-    2:[[BC,GC,GC,WC,WC,BC],[GC,GC,GC,WC,WC,WC],[GC,GC,GC,WC,WC,WC],[GC,GC,GC,WC,WC,WC],[GC,GC,GC,WC,WC,WC],[BC,GC,GC,WC,WC,BC]],
-    3:[[BC,GC,GC,WC,WC,BC],[GC,GC,WC,WC,WC,WC],[GC,WC,WC,WC,WC,WC],[GC,WC,WC,WC,WC,WC],[GC,GC,WC,WC,WC,WC],[BC,GC,GC,WC,WC,BC]],
-    4:[[BC,WC,WC,WC,WC,BC],[WC,WC,WC,WC,WC,WC],[WC,WC,WC,WC,WC,WC],[WC,WC,WC,WC,WC,WC],[WC,WC,WC,WC,WC,WC],[BC,WC,WC,WC,WC,BC]],
-    5:[[BC,WC,WC,GC,GC,BC],[WC,WC,WC,WC,GC,GC],[WC,WC,WC,WC,WC,GC],[WC,WC,WC,WC,WC,GC],[WC,WC,WC,WC,GC,GC],[BC,WC,WC,GC,GC,BC]],
-    6:[[BC,WC,WC,GC,GC,BC],[WC,WC,WC,GC,GC,GC],[WC,WC,WC,GC,GC,GC],[WC,WC,WC,GC,GC,GC],[WC,WC,WC,GC,GC,GC],[BC,WC,WC,GC,GC,BC]],
-    7:[[BC,WC,WC,GC,GC,BC],[WC,WC,GC,GC,GC,GC],[WC,GC,GC,GC,GC,GC],[WC,GC,GC,GC,GC,GC],[WC,WC,GC,GC,GC,GC],[BC,WC,WC,GC,GC,BC]]
+    0:functions.imFromArr([[BC,GC,GC,GC,GC,BC],[GC,GC,GC,GC,GC,GC],[GC,GC,GC,GC,GC,GC],[GC,GC,GC,GC,GC,GC],[GC,GC,GC,GC,GC,GC],[BC,GC,GC,GC,GC,BC]]),
+    1:functions.imFromArr([[BC,GC,GC,WC,WC,BC],[GC,GC,GC,GC,WC,WC],[GC,GC,GC,GC,GC,WC],[GC,GC,GC,GC,GC,WC],[GC,GC,GC,GC,WC,WC],[BC,GC,GC,WC,WC,BC]]),
+    2:functions.imFromArr([[BC,GC,GC,WC,WC,BC],[GC,GC,GC,WC,WC,WC],[GC,GC,GC,WC,WC,WC],[GC,GC,GC,WC,WC,WC],[GC,GC,GC,WC,WC,WC],[BC,GC,GC,WC,WC,BC]]),
+    3:functions.imFromArr([[BC,GC,GC,WC,WC,BC],[GC,GC,WC,WC,WC,WC],[GC,WC,WC,WC,WC,WC],[GC,WC,WC,WC,WC,WC],[GC,GC,WC,WC,WC,WC],[BC,GC,GC,WC,WC,BC]]),
+    4:functions.imFromArr([[BC,WC,WC,WC,WC,BC],[WC,WC,WC,WC,WC,WC],[WC,WC,WC,WC,WC,WC],[WC,WC,WC,WC,WC,WC],[WC,WC,WC,WC,WC,WC],[BC,WC,WC,WC,WC,BC]]),
+    5:functions.imFromArr([[BC,WC,WC,GC,GC,BC],[WC,WC,WC,WC,GC,GC],[WC,WC,WC,WC,WC,GC],[WC,WC,WC,WC,WC,GC],[WC,WC,WC,WC,GC,GC],[BC,WC,WC,GC,GC,BC]]),
+    6:functions.imFromArr([[BC,WC,WC,GC,GC,BC],[WC,WC,WC,GC,GC,GC],[WC,WC,WC,GC,GC,GC],[WC,WC,WC,GC,GC,GC],[WC,WC,WC,GC,GC,GC],[BC,WC,WC,GC,GC,BC]]),
+    7:functions.imFromArr([[BC,WC,WC,GC,GC,BC],[WC,WC,GC,GC,GC,GC],[WC,GC,GC,GC,GC,GC],[WC,GC,GC,GC,GC,GC],[WC,WC,GC,GC,GC,GC],[BC,WC,WC,GC,GC,BC]])
 }
+
+# LC = SUN_COLOR
+# RAY = (102, 96, 47)
+# HC = (68, 68, 68)
+# sunrise_icon = functions.imFromArr([
+#     [BC,BC,LC,BC,BC],
+#     [BC,LC,BC,LC,BC],
+#     [BC,BC,BC,BC,BC],
+#     [LC,BC,LC,BC,LC],
+#     [BC,LC,LC,LC,BC],
+#     [HC,HC,HC,HC,HC],
+# ])
+
+LC  = SUN_COLOR
+RAY = LC
+# RAY = (102, 96, 47)
+HC  = (68, 68, 68)
+BC  = (0, 0, 0)
+sunrise_icon = functions.imFromArr([
+    # [BC,BC,BC,BC,BC,BC,BC],
+    [BC,BC,BC,RAY,BC,BC,BC],
+    [BC,BC,RAY,BC,RAY,BC,BC],
+    [BC,BC,BC,BC,BC,BC,BC],
+    [BC,BC,LC,LC,LC,BC,BC],
+    [BC,LC,LC,LC,LC,LC,BC],
+    [HC,HC,HC,HC,HC,HC,HC],
+])
+
+
+# LC  = SUNSET_COLOR
+# RAY = LC
+sunset_icon = functions.imFromArr([
+    [BC,BC,RAY,BC,RAY,BC,BC],
+    [BC,BC,BC,RAY,BC,BC,BC],
+    [BC,BC,BC,BC,BC,BC,BC],
+    [BC,BC,LC,LC,LC,BC,BC],
+    [BC,LC,LC,LC,LC,LC,BC],
+    [HC,HC,HC,HC,HC,HC,HC],
+])
+
+# arrow2 = functions.imFromArr([
+#     [BC,BC,LC,BC,BC],
+#     [BC,LC,LC,LC,BC],
+#     [LC,LC,LC,LC,LC],
+#     [BC,BC,LC,BC,BC],
+#     [BC,BC,LC,BC,BC],
+# ])
+
+stars = [[(random.randint(0,64), random.randint(0,64)), random.random() * 2*pi] for i in range(128)]
 
 fn_last = 0
 oldim = Image.new("RGB", size=(64,32))
@@ -61,20 +116,18 @@ def btn():
     global dayoffset
     dayoffset = 0
 
-def get(fn = 0):
+def get():
     global oldim, fn_last, dayoffset
     
     # if (fn - fn_last) < 10: return PIL2frame(oldim)
     # fn_last = fn
     
     im = Image.new(mode="RGB", size=(64, 32))
-    d = ImageDraw.Draw(im)
+    d = ImageDraw.Draw(im, mode="RGBA")
     now = datetime.datetime.now() + datetime.timedelta(days=dayoffset) # Scrub through the year
     modified = now.replace(hour=0,minute=0,second=0,microsecond=0,tzinfo=datetime.timezone.utc)
 
     xyValues = [(t, 15-(int((getSunAltitude(modified + datetime.timedelta(hours=t/2))/90)*15.5))) for t in range(0,64)]
-
-    im.paste(Image.fromarray(np.array(moonPhases[((astral.moon.phase(modified)/27.99)*8)//1], dtype=np.uint8), mode="L"), (54, 0))
 
     try:
         s = astral.sun.sun(astral.Observer(latitude=lat, longitude=long), modified, tzinfo=modified.tzinfo)
@@ -82,14 +135,32 @@ def get(fn = 0):
         sunsetDT = s["sunset"].astimezone().strftime("%H:%M")
     except: sunriseDT, sunsetDT = "None", "None"
 
+    for s in stars:
+        s[1] += 0.1
+        c = round((sin(s[1])+1)*10)
+        d.point(s[0], fill=(c,c,c))
+
     d.line(((0,16), (64,16)), "#444")                                                   # Horizonline
-    d.line(xyValues, "#fff")                                                            # Graph of sun possitions
-    d.point(xyValues[round((now.hour + now.minute/60)*2)], color["yellow"])             # The sun curently
+    d.line(xyValues, "#FFEECF")                                                            # Graph of sun possitions
+    sunPos = xyValues[round((now.hour + now.minute/60)*2)]
 
-    d.text((0,0), str(now.strftime("%b %d")), color["yellow"], small05)                         # Date
-    d.text((0, 27), str(sunriseDT), color["orange"], small05)                                   # Sunrise Time
-    d.text((65-small05.getlength(sunsetDT), 27), str(sunsetDT), color["purple"], small05)       # Sunset Time
+    d.circle(sunPos, 4, (*SUN_COLOR, 10))
+    d.circle(sunPos, 3, (*SUN_COLOR, 25))
+    d.circle(sunPos, 2, (*SUN_COLOR, 75))
+    d.rectangle(((sunPos[0]-1, sunPos[1]-1), (sunPos[0]+1, sunPos[1]+1)), fill=functions.color["yellow"])
+    d.point(sunPos, "#FFF")
 
+    moonPos = (54, 1)
+    im.paste(moonPhases[((astral.moon.phase(modified)/27.99)*8)//1], moonPos)
+    d.ellipse(((moonPos[0]-1, moonPos[1]-1), (moonPos[0]+6, moonPos[1]+6)), (*MOON_COLOR, 19))
+    d.ellipse(((moonPos[0]-2, moonPos[1]-2), (moonPos[0]+7, moonPos[1]+7)), (*MOON_COLOR, 5))
+
+    d.text((1,1), str(now.strftime("%b %d")), MOON_COLOR, small05)
+    d.text((1, 26), str(sunriseDT), SUN_COLOR, small05)
+    d.text((46, 26), str(sunsetDT), SUN_COLOR, small05)
+
+    im.paste(sunrise_icon, (20, 26))
+    im.paste(sunset_icon, (37, 26))
     oldim = im
 
     return im

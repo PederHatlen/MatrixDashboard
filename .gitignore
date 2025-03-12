@@ -1,6 +1,6 @@
-spotifysecrets.json
+secrets.json
 tempWeather.json
 __pycache__
 weatherIcons
-test
+/test
 Adafruit_Blinka_Raspberry_Pi5_Piomatter

@@ -1,17 +1,12 @@
-import datetime
-from PIL import Image, ImageDraw
+import functions, datetime
 
-def get(fn = 0):
+ps, gap = 4, 2
+
+def get():
+    im, d = functions.getBlankIM()
+
     now = datetime.datetime.now()
-
-    im = Image.new(mode="RGB", size=(64, 32))
-    d = ImageDraw.Draw(im)  
-    d.fontmode = "1"
-
     time = list(f"{str(now.hour).rjust(2,'0')}{str(now.minute).rjust(2,'0')}{str(now.second).rjust(2,'0')}")
-
-    ps, gap = 4, 2
-
     for x, n in enumerate(time):
         for y in range(0,4):
             xc = x*(gap+ps) + (32-(ps*6+gap*5)/2)           # pixel and gap size offsetting + centering on the screen

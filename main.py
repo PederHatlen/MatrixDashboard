@@ -1,14 +1,14 @@
-import Display, virtual_display, menu, pannels
-import time, gpiozero, datetime
-from functions import *
+import Display, virtual_display, menu, pannels, functions, error
+import time, gpiozero, datetime, requests, json, traceback
 from threading import Thread
 
 from flask import request
 
+DO_AUTOSELECTING = False
+
 # Initialize the webserver/running screen emulator
 socketio = virtual_display.run(1337, allow_cors=True)
 
-framenum = 0
 oldoutTS = 0
 oldimage = pannels.packages["Blank"].get()
 
@@ -38,14 +38,13 @@ class dial:
         self.DIAL.when_rotated_counter_clockwise = (lambda: self.dial("L"))
     
     def dial(self, dir):
-        # print(dir)
         if IsMenuActive:
             menu.dial(f"{self.dialNumber}{dir}")
             return render(menu.get())
 
         try: pannels.packages[menu.selected].dial(f"{self.dialNumber}{dir}")
         except AttributeError: return print(f"{menu.selected} doesn't support dial")
-        return render(pannels.packages[menu.selected].get(framenum))
+        return render(pannels.packages[menu.selected].get())
     
     def btn(self):
         if self.isMenu:
@@ -57,11 +56,7 @@ class dial:
         
         try: pannels.packages[menu.selected].btn()
         except AttributeError: return print(f"{menu.selected} doesn't support buttons")
-        return render(pannels.packages[menu.selected].get(framenum))
-
-# Dials and buttons
-dial0 = dial(0, 26, 20, 21, True)
-dial1 = dial(1, 16, 19, 13)
+        return render(pannels.packages[menu.selected].get())
 
 def render(im):
     global oldimage, lastRenderEvent
@@ -69,8 +64,8 @@ def render(im):
     if oldimage != im:
         oldimage = im
         Display.render(im)
-        sockFrame = PIL2Socket(im)
-        if consolerender: renderConsole(sockFrame)
+        sockFrame = functions.PIL2Socket(im)
+        if consolerender: functions.renderConsole(sockFrame)
         return socketio.emit("refresh", sockFrame)
 
 def autoSelector():
@@ -88,33 +83,38 @@ def autoSelector():
     
     spotifyWasPlaying = spotifyIsPlaying
 
-@socketio.on("connect")
-def onConnect(data=""):
-    socketio.emit("refresh", PIL2Socket(oldimage), to=request.sid)
-
-@socketio.on("slow")
-def slow_connection(data=""):
-    if request.sid in slowConnections:
-        slowConnections.remove(request.sid)
-        print(f"{request.sid} requested speedy connection.")
-    else:
-        slowConnections.append(request.sid)
-        print(f"{request.sid} requested slow connection.")
-
-@socketio.on('inp')
-def on_connection(data):
-    print(f"Input from virtual display: {data}") #type:ignore
-    if "dir" in data: 
-        if data["dir"][0] == "0": dial0.dial(data["dir"][1])
-        elif data["dir"][0] == "1": dial1.dial(data["dir"][1])
-    elif "btn" in data:
-        if data["btn"] == 0: dial0.btn()
-        elif data["btn"] == 1: dial1.btn()
-
 if __name__ == "__main__":
+    # Dials and buttons
+    dial0 = dial(0, 26, 20, 21, True)
+    dial1 = dial(1, 16, 19, 13)
+
+    @socketio.on("connect")
+    def onConnect(data=""):
+        socketio.emit("refresh", functions.PIL2Socket(oldimage), to=request.sid)
+
+    @socketio.on("slow")
+    def slow_connection(data=""):
+        if request.sid in slowConnections:
+            slowConnections.remove(request.sid)
+            print(f"{request.sid} requested speedy connection.")
+        else:
+            slowConnections.append(request.sid)
+            print(f"{request.sid} requested slow connection.")
+
+    @socketio.on('inp')
+    def on_connection(data):
+        print(f"Input from virtual display: {data}") #type:ignore
+        if "dir" in data: 
+            if data["dir"][0] == "0": dial0.dial(data["dir"][1])
+            elif data["dir"][0] == "1": dial1.dial(data["dir"][1])
+        elif "btn" in data:
+            if data["btn"] == 0: dial0.btn()
+            elif data["btn"] == 1: dial1.btn()
+
+    # Render loop
     while True:
         start = time.time()
-        autoSelector()
+        if DO_AUTOSELECTING: autoSelector()
 
         if IsMenuActive: render(menu.get())
         else:
@@ -122,10 +122,11 @@ if __name__ == "__main__":
             except AttributeError: doRender = True
 
             if doRender:
-                try: render(pannels.packages[menu.selected].get(framenum))
-                except Exception as e: print(f"Error: {e}")
-        
-        framenum += 1
+                try: render(pannels.packages[menu.selected].get())
+                except Exception as e:
+                    print(traceback.format_exc())
+                    # print(f"Error: {e}")
+                    render(error.get())
 
         # print(f"Computation time: {round(time.time() - start, 3)}s") 
         # compTime = round(time.time() - start, 3)

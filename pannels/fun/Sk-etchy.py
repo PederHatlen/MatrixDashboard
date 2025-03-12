@@ -1,14 +1,12 @@
-from PIL import Image, ImageDraw
+import functions
 
 x, y = 32, 16
 
 drawing = [(x,y),]
 
-def get(fn = 0):
-    im = Image.new(mode="RGB", size=(64, 32))
-    d = ImageDraw.Draw(im)
+def get():
+    im, d = functions.getBlankIM()
     d.point(drawing, "#fff")
-
     return im
 
 def dial(e):

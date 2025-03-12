@@ -1,0 +1,2 @@
+import random, numpy as np, PIL.Image
+def get(): return PIL.Image.fromarray(np.uint8([[[random.randint(0,255), random.randint(0,255), random.randint(0,255)] for y in range(64)] for x in range(32)])).convert('RGB')

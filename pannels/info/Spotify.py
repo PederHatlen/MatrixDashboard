@@ -1,6 +1,5 @@
-import requests, time, json, base64, datetime
+import functions, requests, time, json, base64, datetime
 from PIL import Image, ImageDraw, ImageEnhance
-from functions import *
 
 
 """
@@ -15,13 +14,14 @@ all these needs to be added to the json file "spotifysecrets.json" in the root o
 
 LOG_NEWDATA = False
 
-small05 = font["small05"]
-icons07 = font["icons07"]
+small05 = functions.font["small05"]
+icons07 = functions.font["icons07"]
 
-spotifyColor = color["spotify"]
+spotifyColor = functions.color["spotify"]
 scrollSpeed = 0.5 # (pixel/50ms)
 
 prev_dial_turn = 0
+fn = 0
 
 covers = {}
 data = {"playing":False, "time":datetime.datetime.fromtimestamp(0), "data":{}}
@@ -32,8 +32,8 @@ MS = datetime.timedelta(milliseconds=1)
 
 spotySecrets = {}
 
-with open(f"{PATH}/spotifysecrets.json", "r") as fi:
-    file = json.load(fi)
+with open(f"{functions.PATH}/secrets.json", "r") as fi:
+    file = json.load(fi)["spotify"]
     spotySecrets["refresh_token"] = file["refresh_token"]
     spotySecrets["Authorization"] = base64.b64encode("".join([file["client_id"], ":", file["client_secret"]]).encode("ascii")).decode("ascii")
 
@@ -104,7 +104,7 @@ def dial(e):
 def threadedData():
     global data, oldTS, needNewDataPLZ
     while True:
-        # Get new data from spotify (every 10 seconds) or (system sendt skip request) or (song just ended)
+        # Get new data from spotify (every 2 seconds) or (system sendt skip request) or (song just ended)
         delta = (datetime.datetime.now() - oldTS)
         # print(delta.seconds, oldTS)
         if delta.seconds > 2 or needNewDataPLZ or (data["playing"] and (data["data"]["progress_ms"]+(delta/MS)-100 >= data["data"]["item"]["duration_ms"])):
@@ -113,14 +113,14 @@ def threadedData():
 
         time.sleep(0.5)
 
-def get(fn = 0):
-    global data, covers
+def get():
+    global data, covers, fn
+    fn +=1
 
     im = Image.new(mode="RGB", size=(64, 32))
 
     # If you are not playing annything on spotify return black screen
-    if data["data"] == {}:
-        return PIL2frame(im)
+    if data["data"] == {}: return im
     
     delta = (datetime.datetime.now() - data["time"])
 
@@ -143,7 +143,7 @@ def get(fn = 0):
     artists = "  -  ".join([e["name"] for e in currentlyPlaying["item"]["artists"]])
     artistlength = small05.getlength(f"{artists}    ")
 
-    scrolLen = int(fn*scrollSpeed)
+    scrolLen = (fn//2)
 
     if titlelength > 32: 
         textPos = (-int(scrolLen%(max(titlelength, 32))),0)
