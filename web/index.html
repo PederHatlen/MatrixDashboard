@@ -25,7 +25,6 @@
             <span class="material-symbols-outlined" onclick="s.emit('inp', {'dir':'1R'})">rotate_right</span>
         </div>
         <span class="material-symbols-outlined" onclick="document.body.requestFullscreen()">fullscreen</span>
-        <span class="material-symbols-outlined" onclick="s.emit('slow')">hourglass</span>
 
     </div>
     <div>Frametime:&nbsp;<span id="frametime"></span>ms &nbsp;&nbsp; CompTime:&nbsp;<span id="comptime"></span>ms</div>
@@ -36,7 +35,6 @@
         ctx.shadowBlur = 5;
 
         var s=io();
-        s.emit('slow');
         s.on("refresh",img=>{
             document.getElementById("frametime").innerHTML = Math.round(performance.now() - prevFrame);
             prevFrame = performance.now()

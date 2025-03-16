@@ -1,10 +1,10 @@
 import Display, virtual_display, menu, pannels, functions, error
-import time, gpiozero, datetime, requests, json, traceback
+import time, gpiozero, datetime, traceback
 from threading import Thread
 
 from flask import request
 
-DO_AUTOSELECTING = False
+DO_AUTOSELECTING = True
 
 # Initialize the webserver/running screen emulator
 socketio = virtual_display.run(1337, allow_cors=True)
@@ -13,7 +13,6 @@ oldoutTS = 0
 oldimage = pannels.packages["Blank"].get()
 
 consolerender = False
-slowConnections = []
 
 spotifyWasPlaying = False
 autoSelected = False
@@ -92,15 +91,6 @@ if __name__ == "__main__":
     def onConnect(data=""):
         socketio.emit("refresh", functions.PIL2Socket(oldimage), to=request.sid)
 
-    @socketio.on("slow")
-    def slow_connection(data=""):
-        if request.sid in slowConnections:
-            slowConnections.remove(request.sid)
-            print(f"{request.sid} requested speedy connection.")
-        else:
-            slowConnections.append(request.sid)
-            print(f"{request.sid} requested slow connection.")
-
     @socketio.on('inp')
     def on_connection(data):
         print(f"Input from virtual display: {data}") #type:ignore
@@ -118,15 +108,10 @@ if __name__ == "__main__":
 
         if IsMenuActive: render(menu.get())
         else:
-            try: doRender = pannels.packages[menu.selected].wantsRender(lastRenderEvent)
-            except AttributeError: doRender = True
-
-            if doRender:
-                try: render(pannels.packages[menu.selected].get())
-                except Exception as e:
-                    print(traceback.format_exc())
-                    # print(f"Error: {e}")
-                    render(error.get())
+            try: render(pannels.packages[menu.selected].get())
+            except Exception as e:
+                print(f"Error: {e}", traceback.format_exc())
+                render(error.get())
 
         # print(f"Computation time: {round(time.time() - start, 3)}s") 
         # compTime = round(time.time() - start, 3)

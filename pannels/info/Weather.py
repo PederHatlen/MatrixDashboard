@@ -5,8 +5,6 @@ from functions import color
 
 small05 = functions.font["small05"]
 
-needsRendering = False
-
 lfn = 0
 expires = datetime.datetime.now(tz=datetime.timezone.utc)
 dataCuttof = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -71,14 +69,6 @@ def get_cuttof(data):
     for d in data["properties"]["timeseries"]:
         if not set({"next_12_hours", "next_6_hours", "next_1_hours"}).issubset(set(d["data"].keys())):
             return datetime.datetime.fromisoformat(d["time"])
-        
-def wantsRender(last):
-    global needsRendering
-    if datetime.datetime.now(tz=datetime.timezone.utc) > expires: return True
-    if last.hour != datetime.datetime.now().hour: return True
-    if needsRendering:
-        needsRendering = False
-        return True
 
 # dn = 0
 # def dial(e):

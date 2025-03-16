@@ -13,7 +13,6 @@
         var ctx = document.querySelector("canvas").getContext("2d");
 
         var s=io();
-        s.emit('slow')
         s.on("refresh",img=>{
             ctx.clearRect(0,0,64,32);
             for(let x in img){
@@ -23,6 +22,16 @@
                 }
             }
         });
+	document.body.onkeydown = (e)=>{
+            switch(e.key){
+                case "a": s.emit('inp', {'dir':'0L'});break;
+                case "d": s.emit('inp', {'dir':'0R'});break;
+                case "s": s.emit('inp', {'btn':0});break;
+                case "ArrowLeft": s.emit('inp', {'dir':'1L'});break;
+                case "ArrowRight": s.emit('inp', {'dir':'1R'});break;
+                case "ArrowDown": s.emit('inp', {'btn':1});break;
+            };
+        };
     </script>
 </body>
 </html>
